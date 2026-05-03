@@ -56,6 +56,20 @@ const theme = createTheme({
         }
       },
     },
+    MuiDivider: {
+      styleOverrides: {
+        "root": {
+          borderColor: '#024F6E'
+        }
+      }
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: {
+          fill: "#024F6E"
+        }
+      }
+    }
   },
 });
 

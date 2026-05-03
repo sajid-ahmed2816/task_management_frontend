@@ -4,6 +4,24 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100vh;
+}
+
+body {
+  background: #F0F0F0 !important;
+}
+
+::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+  background-color: #F0F0F0;
+  /* or add it to the track */
+}
+
+/* Add a thumb */
+::-webkit-scrollbar-thumb {
+  background: #024F6E;
 }

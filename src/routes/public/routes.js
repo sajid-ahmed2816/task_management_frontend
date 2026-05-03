@@ -1,9 +1,9 @@
-import {createElement} from "react";
-import Login from "../../views/Login";
+import { createElement } from "react";
+import Login from "../../views/auth";
 
 const publicRoutes = [
 	{
-		path:"/login",
+		path: "/login",
 		component: createElement(Login)
 	}
 ];

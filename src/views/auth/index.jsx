@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, forwardRef, Fragment } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Box, Button, Grid, IconButton, TextField, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Slide, CircularProgress } from '@mui/material';
 import { Close, Visibility, VisibilityOff } from '@mui/icons-material';
 import { OTPInput } from 'input-otp';
 import gsap from 'gsap';
 import { useForm } from "react-hook-form";
-import AuthServices from '../api/auth';
-import toastify from '../components/toast';
+import AuthServices from '../../api/auth';
+import toastify from '../../components/toast';
+import useAuth from "../../hooks/useAuth";
 
 const Transition = forwardRef(function Transition(props, ref) {
 	return <Slide direction="up" ref={ref} {...props} />;
@@ -140,7 +142,8 @@ function OTPDialog({ open, handleClose, email, seconds }) {
 						onClick={resendOtp}
 						variant={'outlined'}
 						fullWidth={true}
-						disabled={seconds > 0}
+						disabled={seconds > 0 || isLoading2}
+						loading={isLoading2}
 						sx={{ margin: "0 !important" }}
 					>
 						{seconds > 0 ? `Resend OTP in ${seconds}` : "Resend OTP"}
@@ -162,6 +165,10 @@ function Login() {
 	const animationRef = useRef(null);
 	const loginCardRef = useRef(null);
 	const signupCardRef = useRef(null);
+
+	const navigate = useNavigate();
+
+	const { userLogin } = useAuth();
 
 	const {
 		register: register1,
@@ -234,8 +241,10 @@ function Login() {
 		try {
 			const result = await toastify(AuthServices.login(obj));
 			if (result.status) {
-				console.log(result);
-			}
+				const obj = { ...result.data.user, token: result.data.token };
+				userLogin(obj);
+				navigate("/dashboard");
+			};
 		} catch (error) {
 			console.log(error);
 		} finally {

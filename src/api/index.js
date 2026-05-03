@@ -1,4 +1,4 @@
-import Axios from "../config/axios";
+import Axios from "../config/axios/axios";
 import { ErrorHandler } from "../utils/ErrorHandler";
 
 export const get = async (endPoint, param) => {
