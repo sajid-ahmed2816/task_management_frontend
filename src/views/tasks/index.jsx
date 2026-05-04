@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import { Box, Button, Grid, Typography, LinearProgress } from '@mui/material';
+import { Box, Button, Grid, Typography, LinearProgress, AvatarGroup, Avatar } from '@mui/material';
 import { CircleOutlined, ChangeHistoryRounded, StarBorderRounded, MessageOutlined, AttachFileOutlined } from '@mui/icons-material';
 
 const tasks = [
@@ -24,6 +24,28 @@ const tasks = [
     attachments: [
       "file1",
       "file2"
+    ],
+    assignees: [
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
     ]
   },
   {
@@ -47,6 +69,28 @@ const tasks = [
     attachments: [
       "file1",
       "file2"
+    ],
+    assignees: [
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
     ]
   },
   {
@@ -70,6 +114,28 @@ const tasks = [
     attachments: [
       "file1",
       "file2"
+    ],
+    assignees: [
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
+      {
+        name: "person 1",
+        profile_pircture: "url/path/name.ext"
+      },
     ]
   },
 ]
@@ -201,36 +267,58 @@ function Tasks() {
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 2
+                          justifyContent: "space-between"
                         }}
                       >
                         <Box
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 1
-                          }}
-                        >
-                          <MessageOutlined sx={{ width: "18px", height: "18px" }} />
-                          <Typography>4</Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1
+                            gap: 1.5
                           }}
                         >
                           <Box
                             sx={{
-                              transform: "rotate(45deg)",
-                              display: "flex"
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
                             }}
                           >
-                            <AttachFileOutlined sx={{ width: "18px", height: "18px" }} />
+                            <MessageOutlined sx={{ width: "18px", height: "18px" }} />
+                            <Typography>4</Typography>
                           </Box>
-                          <Typography>4</Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                transform: "rotate(45deg)",
+                                display: "flex"
+                              }}
+                            >
+                              <AttachFileOutlined sx={{ width: "18px", height: "18px" }} />
+                            </Box>
+                            <Typography>4</Typography>
+                          </Box>
                         </Box>
+                        <AvatarGroup
+                          total={item.assignees.length}
+                          slotProps={{
+                            surplus: {
+                              sx: {
+                                width: "24px", height: "24px", fontSize: "12px"
+                              }
+                            }
+                          }}
+                        >
+                          {item.assignees.slice(0, 2).map(assignee => (
+                            <Avatar alt={assignee.name} sx={{ width: "24px", height: "24px" }} />
+                          ))}
+                        </AvatarGroup>
                       </Box>
                       <Box
                         sx={{
@@ -362,36 +450,58 @@ function Tasks() {
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 2
+                          justifyContent: "space-between"
                         }}
                       >
                         <Box
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 1
-                          }}
-                        >
-                          <MessageOutlined sx={{ width: "18px", height: "18px" }} />
-                          <Typography>4</Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1
+                            gap: 1.5
                           }}
                         >
                           <Box
                             sx={{
-                              transform: "rotate(45deg)",
-                              display: "flex"
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
                             }}
                           >
-                            <AttachFileOutlined sx={{ width: "18px", height: "18px" }} />
+                            <MessageOutlined sx={{ width: "18px", height: "18px" }} />
+                            <Typography>4</Typography>
                           </Box>
-                          <Typography>4</Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                transform: "rotate(45deg)",
+                                display: "flex"
+                              }}
+                            >
+                              <AttachFileOutlined sx={{ width: "18px", height: "18px" }} />
+                            </Box>
+                            <Typography>4</Typography>
+                          </Box>
                         </Box>
+                        <AvatarGroup
+                          total={item.assignees.length}
+                          slotProps={{
+                            surplus: {
+                              sx: {
+                                width: "24px", height: "24px", fontSize: "12px"
+                              }
+                            }
+                          }}
+                        >
+                          {item.assignees.slice(0, 2).map(assignee => (
+                            <Avatar alt={assignee.name} sx={{ width: "24px", height: "24px" }} />
+                          ))}
+                        </AvatarGroup>
                       </Box>
                       <Box
                         sx={{
@@ -523,36 +633,58 @@ function Tasks() {
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 2
+                          justifyContent: "space-between"
                         }}
                       >
                         <Box
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 1
-                          }}
-                        >
-                          <MessageOutlined sx={{ width: "18px", height: "18px" }} />
-                          <Typography>4</Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1
+                            gap: 1.5
                           }}
                         >
                           <Box
                             sx={{
-                              transform: "rotate(45deg)",
-                              display: "flex"
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
                             }}
                           >
-                            <AttachFileOutlined sx={{ width: "18px", height: "18px" }} />
+                            <MessageOutlined sx={{ width: "18px", height: "18px" }} />
+                            <Typography>4</Typography>
                           </Box>
-                          <Typography>4</Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                transform: "rotate(45deg)",
+                                display: "flex"
+                              }}
+                            >
+                              <AttachFileOutlined sx={{ width: "18px", height: "18px" }} />
+                            </Box>
+                            <Typography>4</Typography>
+                          </Box>
                         </Box>
+                        <AvatarGroup
+                          total={item.assignees.length}
+                          slotProps={{
+                            surplus: {
+                              sx: {
+                                width: "24px", height: "24px", fontSize: "12px"
+                              }
+                            }
+                          }}
+                        >
+                          {item.assignees.slice(0, 2).map(assignee => (
+                            <Avatar alt={assignee.name} sx={{ width: "24px", height: "24px" }} />
+                          ))}
+                        </AvatarGroup>
                       </Box>
                       <Box
                         sx={{
