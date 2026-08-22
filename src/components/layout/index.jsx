@@ -13,7 +13,7 @@ function Layout() {
         }}
       >
         <Sidebar />
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Box component="main" sx={{ flexGrow: 1, p: 3, background: "#FFFFFF" }}>
           <Outlet />
         </Box>
       </Box>

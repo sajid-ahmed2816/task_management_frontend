@@ -1,3 +1,12 @@
 .otp-input {
   width: auto !important;
 }
+
+.task-card-dragging {
+  transform: rotate(4deg) !important;
+  transform-origin: center center;
+  opacity: 0.9;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  /* optional elevation */
+  cursor: grabbing;
+}

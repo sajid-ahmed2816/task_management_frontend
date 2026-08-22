@@ -59,14 +59,14 @@ const theme = createTheme({
     MuiDivider: {
       styleOverrides: {
         "root": {
-          borderColor: '#024F6E'
+          borderColor: '#FFFFFF'
         }
       }
     },
     MuiSvgIcon: {
       styleOverrides: {
         root: {
-          fill: "#024F6E"
+          fill: "white"
         }
       }
     }

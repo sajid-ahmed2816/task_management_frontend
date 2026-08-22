@@ -40,6 +40,9 @@ function OTPDialog({ open, handleClose, email, seconds }) {
 	const [isLoading2, setIsLoading2] = useState(false);
 	const { handleSubmit } = useForm();
 
+	const navigate = useNavigate();
+	const { userLogin } = useAuth();
+
 	const verifyOtp = async () => {
 		setIsLoading(true);
 		const obj = { email, otp };
@@ -47,6 +50,10 @@ function OTPDialog({ open, handleClose, email, seconds }) {
 			const result = await toastify(AuthServices.verifyOtp(obj));
 			if (result?.status) {
 				handleClose();
+				const obj = { ...result.data.user, token: result.data.token };
+				toastify(result);
+				userLogin(obj);
+				navigate("/dashboard");
 			}
 		} catch (error) {
 			console.log(error);
@@ -189,7 +196,7 @@ function Login() {
 	const watchPassword = watch2("password");
 
 	const startCountDown = () => {
-		setSeconds(3);
+		setSeconds(60);
 		const interval = setInterval(() => {
 			setSeconds((prev) => {
 				if (prev <= 1) clearInterval(interval);
@@ -241,15 +248,21 @@ function Login() {
 		try {
 			const result = await toastify(AuthServices.login(obj));
 			if (result.status) {
-				const obj = { ...result.data.user, token: result.data.token };
-				userLogin(obj);
-				navigate("/dashboard");
-			};
+				if (!result.data.user.isVerified) {
+					startCountDown();
+					handleOTPDialog();
+					setEmail(obj.email);
+				} else {
+					const userObj = { ...result.data.user, token: result.data.token };
+					userLogin(userObj);
+					navigate("/dashboard");
+				}
+			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		} finally {
 			setIsLoading(false);
-		};
+		}
 	};
 
 	const handleSignUp = async (data) => {

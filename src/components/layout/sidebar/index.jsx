@@ -11,19 +11,19 @@ import toast from 'react-hot-toast';
 const drawerWidth = 290;
 
 const openedMixin = (theme) => ({
-  background: "#F0F0F0",
+  background: "#024F6E",
   width: drawerWidth,
   transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   }),
   overflowX: 'hidden',
-  color: theme.palette.primary.main,
+  color: "#FFFFFF",
   borderRight: `1px solid  ${theme.palette.primary.main}`
 });
 
 const closedMixin = (theme) => ({
-  background: "#F0F0F0",
+  background: "#024F6E",
   transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
