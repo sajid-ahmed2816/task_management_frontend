@@ -14,7 +14,7 @@ export const get = async (endPoint, param) => {
 export const post = async (endPoint, data) => {
   try {
     const result = await Axios.post(endPoint, data);
-    if (result.status == 200) return result.data;
+    if (result.status == 200 || result.status == 201) return result.data;
     else throw result;
   } catch (error) {
     throw ErrorHandler(error);

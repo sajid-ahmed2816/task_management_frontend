@@ -1,56 +1,25 @@
-import React, { Fragment, useState } from 'react';
-import { Box, Button, Grid, Typography, LinearProgress, AvatarGroup, Avatar, IconButton, Menu, MenuItem, ListItemIcon, Divider, ListItemText } from '@mui/material';
+import React, { Fragment, useState, useEffect } from 'react';
+import { Box, Button, Grid, Typography, LinearProgress, AvatarGroup, Avatar, IconButton, Menu, MenuItem, ListItemIcon, Divider, ListItemText, CircularProgress } from '@mui/material';
 import { CircleOutlined, ChangeHistoryRounded, StarBorderRounded, MessageOutlined, AttachFileOutlined, MoreHorizOutlined, DeleteOutlineRounded, AccountCircleOutlined, BorderColorOutlined, AssignmentIndOutlined } from '@mui/icons-material';
 import { DragDropProvider, useDraggable, useDroppable, DragOverlay } from '@dnd-kit/react';
+import TaskServices from "../../api/tasks"
+import CreateTask from '../../components/create_task';
 import { CSS } from '@dnd-kit/utilities';
 
-const tasks = [
-  {
-    _id: 'task-1',
-    title: 'Redesign Landing Page',
-    category: 'UI/UX Design',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit...',
-    comments: [ /* ... 3 comments ... */],
-    attachments: ['file1', 'file2'],
-    assignees: [ /* ... 5 assignees ... */],
-    subtasks: { total: 5, completed: 1 },
-  },
-  {
-    _id: 'task-2',
-    title: 'Redesign Landing Page',
-    category: 'UI/UX Design',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit...',
-    comments: [ /* ... */],
-    attachments: ['file1', 'file2'],
-    assignees: [ /* ... */],
-    subtasks: { total: 5, completed: 1 },
-  },
-  {
-    _id: 'task-3',
-    title: 'Redesign Landing Page',
-    category: 'UI/UX Design',
-    description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit...',
-    comments: [ /* ... */],
-    attachments: ['file1', 'file2'],
-    assignees: [ /* ... */],
-    subtasks: { total: 5, completed: 1 },
-  },
-];
-
-const initialColumns = {
-  inProgress: [tasks[0]],
-  paused: [tasks[1]],
-  done: [tasks[2]],
-};
-
-// ---------- Task Menu (unchanged) ----------
-function TaskMenu({ anchorEl, open, handleClose }) {
+function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete }) {
   return (
     <Menu
-      anchorEl={anchorEl}
       open={open}
+      anchorEl={anchorEl}
       onClose={handleClose}
       onClick={handleClose}
+      sx={{
+        "& .MuiList-root": {
+          display: "flex",
+          flexDirection: "column",
+          gap: "2px",
+        }
+      }}
       slotProps={{
         paper: {
           elevation: 0,
@@ -64,50 +33,158 @@ function TaskMenu({ anchorEl, open, handleClose }) {
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
-      <MenuItem onClick={handleClose} sx={{ fontSize: 14, gap: 2 }}>
-        <ListItemIcon sx={{ "&.MuiListItemIcon-root": { background: "#D4D4D4", p: 0.5, borderRadius: "4px", width: 28, minWidth: 0 } }}>
-          <ChangeHistoryRounded fontSize="small" />
+      <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
+        <ListItemIcon sx={{
+          "&.MuiListItemIcon-root": {
+            background: "#D4D4D4",
+            justifyContent: "center",
+            p: "2px",
+            borderRadius: "4px",
+            width: 24,
+            minWidth: 0
+          }
+        }}
+        >
+          <ChangeHistoryRounded fontSize="small" sx={{ fill: "#024F6E !important" }} />
         </ListItemIcon>
-        <ListItemText primary={"Move to Paused"} />
+        <ListItemText
+          sx={{
+            "& .MuiTypography-root": {
+              fontSize: "14px"
+            }
+          }}
+          primary={"Move to Paused"}
+        />
       </MenuItem>
-      <MenuItem onClick={handleClose} sx={{ fontSize: 14, gap: 2 }}>
-        <ListItemIcon sx={{ "&.MuiListItemIcon-root": { background: "#D4D4D4", p: 0.5, borderRadius: "4px", width: 28, minWidth: 0 } }}>
-          <StarBorderRounded fontSize="small" />
+      <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
+        <ListItemIcon sx={{
+          "&.MuiListItemIcon-root": {
+            background: "#D4D4D4",
+            justifyContent: "center",
+            p: "2px",
+            borderRadius: "4px",
+            width: 24,
+            minWidth: 0
+          }
+        }}
+        >
+          <StarBorderRounded fontSize="small" sx={{ fill: "#024F6E !important" }} />
         </ListItemIcon>
-        <ListItemText primary={"Move to Done"} />
+        <ListItemText
+          sx={{
+            "& .MuiTypography-root": {
+              fontSize: "14px"
+            }
+          }}
+          primary={"Move to Done"}
+        />
       </MenuItem>
-      <Divider />
-      <MenuItem onClick={handleClose} sx={{ fontSize: 14, gap: 2 }}>
-        <ListItemIcon sx={{ "&.MuiListItemIcon-root": { background: "#D4D4D4", p: 0.5, borderRadius: "4px", width: 28, minWidth: 0 } }}>
-          <AssignmentIndOutlined fontSize="small" />
+      <Divider sx={{ borderColor: "#024F6E" }} />
+      <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
+        <ListItemIcon sx={{
+          "&.MuiListItemIcon-root": {
+            background: "#D4D4D4",
+            justifyContent: "center",
+            p: "2px",
+            borderRadius: "4px",
+            width: 24,
+            minWidth: 0
+          }
+        }}
+        >
+          <AssignmentIndOutlined fontSize="small" sx={{ fill: "#024F6E !important" }} />
         </ListItemIcon>
-        <ListItemText primary={"Assign to ..."} />
+        <ListItemText
+          sx={{
+            "& .MuiTypography-root": {
+              fontSize: "14px"
+            }
+          }}
+          primary={"Assign to ..."}
+        />
       </MenuItem>
-      <MenuItem onClick={handleClose} sx={{ fontSize: 14, gap: 2 }}>
-        <ListItemIcon sx={{ "&.MuiListItemIcon-root": { background: "#D4D4D4", p: 0.5, borderRadius: "4px", width: 28, minWidth: 0 } }}>
-          <AccountCircleOutlined fontSize="small" />
+      <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
+        <ListItemIcon sx={{
+          "&.MuiListItemIcon-root": {
+            background: "#D4D4D4",
+            justifyContent: "center",
+            p: "2px",
+            borderRadius: "4px",
+            width: 24,
+            minWidth: 0
+          }
+        }}
+        >
+          <AccountCircleOutlined fontSize="small" sx={{ fill: "#024F6E !important" }} />
         </ListItemIcon>
-        <ListItemText primary={"Assign to me"} />
+        <ListItemText
+          sx={{
+            "& .MuiTypography-root": {
+              fontSize: "14px"
+            }
+          }}
+          primary={"Assign to me"}
+        />
       </MenuItem>
-      <Divider />
-      <MenuItem onClick={handleClose} sx={{ fontSize: 14, gap: 2 }}>
-        <ListItemIcon sx={{ "&.MuiListItemIcon-root": { background: "#D4D4D4", p: 0.5, borderRadius: "4px", width: 28, minWidth: 0 } }}>
-          <BorderColorOutlined fontSize="small" />
+      <Divider sx={{ borderColor: "#024F6E" }} />
+      <MenuItem sx={{ gap: 2, py: "3px !important" }}
+        onClick={() => onEdit(task)}
+      >
+        <ListItemIcon
+          sx={{
+            "&.MuiListItemIcon-root": {
+              background: "#D4D4D4",
+              justifyContent: "center",
+              p: "2px",
+              borderRadius: "4px",
+              width: 24,
+              minWidth: 0
+            }
+          }}
+        >
+          <BorderColorOutlined fontSize="small" sx={{ fill: "#024F6E !important" }} />
         </ListItemIcon>
-        <ListItemText primary={"Edit"} />
+        <ListItemText
+          sx={{
+            "& .MuiTypography-root": {
+              fontSize: "14px"
+            }
+          }}
+          primary={"Edit"}
+        />
       </MenuItem>
-      <MenuItem onClick={handleClose} sx={{ fontSize: 14, gap: 2 }}>
-        <ListItemIcon sx={{ "&.MuiListItemIcon-root": { background: "#D4D4D4", p: 0.5, borderRadius: "4px", width: 28, minWidth: 0 } }}>
-          <DeleteOutlineRounded fontSize="small" />
+      <MenuItem sx={{ gap: 2, py: "3px !important" }}
+        onClick={() => onDelete(task)}
+      >
+        <ListItemIcon
+          sx={{
+            "&.MuiListItemIcon-root": {
+              background: "#D4D4D4",
+              justifyContent: "center",
+              p: "2px",
+              borderRadius: "4px",
+              width: 24,
+              minWidth: 0,
+            },
+          }}
+        >
+          <DeleteOutlineRounded fontSize="small" sx={{ fill: "#024F6E !important" }} />
         </ListItemIcon>
-        <ListItemText primary={"Delete"} />
+        <ListItemText
+          sx={{
+            "& .MuiTypography-root": {
+              fontSize: "14px"
+            }
+          }}
+          primary="Delete"
+        />
       </MenuItem>
     </Menu>
   );
-}
+};
 
-// ---------- Shared Task Card (used in both list and drag overlay) ----------
-function TaskCard({ draggable, item, progress = 20, onMenuClick }) {
+function TaskCard({ draggable, item, onMenuClick }) {
+  const progress = item?.progressPercentage || 0;
   return (
     <Box
       sx={{
@@ -145,21 +222,26 @@ function TaskCard({ draggable, item, progress = 20, onMenuClick }) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <MessageOutlined sx={{ width: 18, height: 18, fill: "#024F6E !important" }} />
-            <Typography variant="body2">{item.comments.length}</Typography>
+            <Typography variant="body2">{item.commentCount || 0}</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ transform: 'rotate(45deg)', display: 'flex' }}>
               <AttachFileOutlined sx={{ width: 18, height: 18, fill: "#024F6E !important" }} />
             </Box>
-            <Typography variant="body2">{item.attachments.length}</Typography>
+            <Typography variant="body2">{item.attachmentCount || 0}</Typography>
           </Box>
         </Box>
         <AvatarGroup
-          total={item.assignees.length}
+          total={item.assignees?.length || 0}
           slotProps={{ surplus: { sx: { width: 24, height: 24, fontSize: 12 } } }}
         >
-          {item.assignees.slice(0, 2).map((assignee, ind) => (
-            <Avatar key={ind} alt={assignee.name} sx={{ width: 24, height: 24 }} />
+          {(item.assignees || []).slice(0, 2).map((assignee, ind) => (
+            <Avatar
+              key={assignee._id || ind}
+              alt={assignee.name}
+              src={assignee.profile_picture}
+              sx={{ width: 24, height: 24 }}
+            />
           ))}
         </AvatarGroup>
       </Box>
@@ -170,13 +252,14 @@ function TaskCard({ draggable, item, progress = 20, onMenuClick }) {
           value={progress}
           sx={{ width: '100%', borderRadius: 8 }}
         />
-        <Typography variant="body2">{`${item.subtasks.completed}/${item.subtasks.total}`}</Typography>
+        <Typography variant="body2">
+          {`${item.completedSubtasks || 0}/${item.totalSubtasks || 0}`}
+        </Typography>
       </Box>
     </Box>
   );
-}
+};
 
-// ---------- Draggable Task Item ----------
 function DraggableTask({ task, columnKey, index, onMenuClick, draggable }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task._id,
@@ -196,12 +279,14 @@ function DraggableTask({ task, columnKey, index, onMenuClick, draggable }) {
       {...attributes}
       style={style}
     >
-      <TaskCard draggable={draggable} item={task} progress={20} onMenuClick={onMenuClick} />
+      <TaskCard
+        item={task}
+        onMenuClick={(event) => onMenuClick(event, task)}
+      />
     </Box>
   );
-}
+};
 
-// ---------- Droppable Column ----------
 function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
   const { setNodeRef, isOver } = useDroppable({
     id: columnKey,
@@ -252,15 +337,58 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
       </Box>
     </Grid>
   );
-}
+};
 
-// ---------- Main Tasks Component ----------
+const mapTasksToColumns = (tasks = []) => {
+  return {
+    inProgress: tasks.filter((task) => task.status === 'in-progress'),
+    paused: tasks.filter((task) => task.status === 'paused'),
+    done: tasks.filter((task) => task.status === 'done'),
+  };
+};
+
 export default function Tasks() {
-  const [columns, setColumns] = useState(initialColumns);
+  const [columns, setColumns] = useState({
+    inProgress: [],
+    paused: [],
+    done: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
-  const [activeId, setActiveId] = useState(null);  // id of dragged task
+  const [activeId, setActiveId] = useState(null);
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [updatingTask, setUpdatingTask] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [deletingTask, setDeletingTask] = useState(false);
 
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const response = await TaskServices.getTasks();
+
+        console.log("GET TASKS RESPONSE:", response);
+
+        const tasks = response?.data || [];
+
+        setColumns(mapTasksToColumns(tasks));
+      } catch (error) {
+        console.error("FETCH TASKS ERROR:", error);
+        setError(error?.message || "Failed to load tasks");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   // Get active task object from columns
   const getTaskById = (id) => {
@@ -281,8 +409,15 @@ export default function Tasks() {
   };
 
   // Menu handlers
-  const handleMenuClick = (event) => setAnchorEl(event.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
+  const handleMenuClick = (event, task) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedTask(task);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedTask(null);
+  };
 
   // DnD handlers
   const handleDragStart = (event) => {
@@ -294,18 +429,38 @@ export default function Tasks() {
     const { active, over } = event;
     setActiveId(null);
 
-    if (!over) return; // dropped outside
-
+    if (!over) {
+      console.log("❌ No drop target detected");
+      return;
+    }
     const sourceColumnKey = findColumnOfTask(active.id);
     const destinationColumnKey = over.id; // droppable id = column key
 
     if (!sourceColumnKey || !destinationColumnKey) return;
     if (sourceColumnKey === destinationColumnKey) return; // same column, for now skip reordering
 
+    console.log("SOURCE:", sourceColumnKey);
+    console.log("DESTINATION:", destinationColumnKey);
+
+    if (!sourceColumnKey || !destinationColumnKey) {
+      console.log("❌ Invalid source/destination");
+      return;
+    }
+
+    if (sourceColumnKey === destinationColumnKey) {
+      console.log("⚠️ Same column");
+      return;
+    }
+
     // Perform move
     const sourceTasks = [...columns[sourceColumnKey]];
     const taskIndex = sourceTasks.findIndex(t => t._id === active.id);
-    if (taskIndex === -1) return;
+
+    if (taskIndex === -1) {
+      console.log("❌ Task not found");
+      return;
+    }
+
     const [movedTask] = sourceTasks.splice(taskIndex, 1);
 
     const destTasks = [...columns[destinationColumnKey], movedTask];
@@ -319,9 +474,175 @@ export default function Tasks() {
 
   const handleDragCancel = () => setActiveId(null);
 
+  const handleSubmitTask = async (formData, editTask) => {
+    if (editTask) {
+      try {
+        setUpdatingTask(true);
+
+        const response = await TaskServices.updateTask(
+          editTask._id,
+          formData
+        );
+
+        console.log("UPDATE TASK RESPONSE:", response);
+
+        const updatedTask = response?.data;
+
+        if (!updatedTask) {
+          throw new Error("Task was not updated");
+        }
+
+        setColumns((prev) => {
+          const newColumns = {
+            inProgress: [],
+            paused: [],
+            done: [],
+          };
+
+          Object.values(prev)
+            .flat()
+            .map((task) =>
+              task._id === updatedTask._id
+                ? updatedTask
+                : task
+            )
+            .forEach((task) => {
+              if (task.status === "in-progress") {
+                newColumns.inProgress.push(task);
+              } else if (task.status === "paused") {
+                newColumns.paused.push(task);
+              } else if (task.status === "done") {
+                newColumns.done.push(task);
+              }
+            });
+
+          return newColumns;
+        });
+
+        setEditingTask(null);
+        setCreateTaskOpen(false);
+
+        return true;
+      } catch (error) {
+        console.error("UPDATE TASK ERROR:", error);
+        return false;
+      } finally {
+        setUpdatingTask(false);
+      }
+    }
+
+    // CREATE
+    try {
+      setCreatingTask(true);
+
+      const response = await TaskServices.createTask(formData);
+
+      const createdTask = response?.data;
+
+      if (!createdTask) {
+        throw new Error("Task was not created");
+      }
+
+      setColumns((prev) => {
+        const columnMap = {
+          "in-progress": "inProgress",
+          paused: "paused",
+          done: "done",
+        };
+
+        const columnKey =
+          columnMap[createdTask.status] || "inProgress";
+
+        return {
+          ...prev,
+          [columnKey]: [
+            ...prev[columnKey],
+            createdTask,
+          ],
+        };
+      });
+
+      setCreateTaskOpen(false);
+
+      return true;
+    } catch (error) {
+      console.error("CREATE TASK ERROR:", error);
+      return false;
+    } finally {
+      setCreatingTask(false);
+    }
+  };
+
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    handleMenuClose();
+    setCreateTaskOpen(true);
+  };
+
+  const handleDeleteTask = async (task) => {
+    if (!task?._id) return;
+
+    try {
+      setDeletingTask(true);
+
+      await TaskServices.deleteTask(task._id);
+
+      setColumns((prev) => ({
+        inProgress: prev.inProgress.filter(
+          (item) => item._id !== task._id
+        ),
+        paused: prev.paused.filter(
+          (item) => item._id !== task._id
+        ),
+        done: prev.done.filter(
+          (item) => item._id !== task._id
+        ),
+      }));
+
+      handleMenuClose();
+    } catch (error) {
+      console.error("DELETE TASK ERROR:", error);
+    } finally {
+      setDeletingTask(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    )
+  };
+
+  if (error) {
+    return (
+      <Typography color="error">
+        {error}
+      </Typography>
+    )
+  };
+
   return (
     <Fragment>
-      <TaskMenu anchorEl={anchorEl} open={open} handleClose={handleMenuClose} />
+      <CreateTask
+        open={createTaskOpen}
+        onClose={() => {
+          setCreateTaskOpen(false);
+          setEditingTask(null);
+        }}
+        onSubmit={handleSubmitTask}
+        loading={editingTask ? updatingTask : creatingTask}
+        editTask={editingTask}
+      />
+      <TaskMenu
+        anchorEl={anchorEl}
+        open={open}
+        handleClose={handleMenuClose}
+        task={selectedTask}
+        onDelete={handleDeleteTask}
+        onEdit={handleEditTask}
+      />
 
       <Grid container spacing={2}>
         <Grid size={12}>
@@ -329,7 +650,18 @@ export default function Tasks() {
             <Typography variant="h1" sx={{ fontSize: 24, fontWeight: 600 }}>
               Tasks
             </Typography>
-            <Button variant="contained" sx={{ borderRadius: '12px', fontSize: '20px', lineHeight: 1.2 }}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setEditingTask(null);
+                setCreateTaskOpen(true);
+              }}
+              sx={{
+                borderRadius: "12px",
+                fontSize: "20px",
+                lineHeight: 1.2,
+              }}
+            >
               +
             </Button>
           </Box>
@@ -373,14 +705,11 @@ export default function Tasks() {
                     transformOrigin: 'center center',
                     boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
                     borderRadius: '12px',
-                    // No opacity = solid
                   }}
                 >
-                  {/* Render the same TaskCard without the menu button (optional) */}
                   <TaskCard
+                    draggable={draggable}
                     item={activeTask}
-                    progress={20}
-                    onMenuClick={() => { }} // noop in overlay
                   />
                 </Box>
               ) : null}
@@ -390,4 +719,4 @@ export default function Tasks() {
       </Grid>
     </Fragment>
   );
-}
+};
