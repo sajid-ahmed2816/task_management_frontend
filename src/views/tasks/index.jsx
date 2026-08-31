@@ -4,7 +4,6 @@ import { CircleOutlined, ChangeHistoryRounded, StarBorderRounded, MessageOutline
 import { DragDropProvider, useDraggable, useDroppable, DragOverlay } from '@dnd-kit/react';
 import TaskServices from "../../api/tasks"
 import CreateTask from '../../components/create_task';
-import { CSS } from '@dnd-kit/utilities';
 
 function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete }) {
   return (
@@ -183,7 +182,7 @@ function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete }) {
   );
 };
 
-function TaskCard({ draggable, item, onMenuClick }) {
+function TaskCard({ item, onMenuClick }) {
   const progress = item?.progressPercentage || 0;
   return (
     <Box
@@ -195,9 +194,7 @@ function TaskCard({ draggable, item, onMenuClick }) {
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
-        // When used in drag overlay, additional styles will be added outside
       }}
-      draggable={draggable}
     >
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.2 }}>
@@ -260,24 +257,22 @@ function TaskCard({ draggable, item, onMenuClick }) {
   );
 };
 
-function DraggableTask({ task, columnKey, index, onMenuClick, draggable }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+function DraggableTask({ task, columnKey, index, onMenuClick }) {
+  const draggable = useDraggable({
     id: task._id,
-    data: { column: columnKey, index },
+    data: {
+      column: columnKey,
+      index,
+    },
   });
-
-  const style = {
-    // use CSS.Translate for smooth movement
-    transform: CSS.Translate.toString(transform),
-    cursor: isDragging ? 'grabbing' : 'grab',
-  };
 
   return (
     <Box
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={style}
+      ref={draggable.ref}
+      sx={{
+        cursor: draggable.isDragging ? "grabbing" : "grab",
+        userSelect: "none",
+      }}
     >
       <TaskCard
         item={task}
@@ -288,7 +283,7 @@ function DraggableTask({ task, columnKey, index, onMenuClick, draggable }) {
 };
 
 function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
-  const { setNodeRef, isOver } = useDroppable({
+  const droppable = useDroppable({
     id: columnKey,
   });
 
@@ -298,13 +293,23 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
         <Box sx={{ px: 1 }}>
           <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{ lineHeight: 0 }}>
-              <Icon sx={{ width: 18, height: 18, fill: "#024F6E !important" }} />
+              <Icon
+                sx={{
+                  width: 18,
+                  height: 18,
+                  fill: "#024F6E !important"
+                }}
+              />
             </Box>
-            <Box component="span" sx={{ lineHeight: 1 }}>{title}</Box>
+
+            <Box component="span" sx={{ lineHeight: 1 }}>
+              {title}
+            </Box>
           </Typography>
         </Box>
+
         <Box
-          ref={setNodeRef}
+          ref={droppable.ref}
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -314,7 +319,10 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
             overflowY: 'auto',
             padding: 1,
             transition: 'border 0.2s',
-            boxShadow: "0px 0px 5px 3px #40404020"
+            boxShadow: "0px 0px 5px 3px #40404020",
+            border: droppable.isDropTarget
+              ? '2px dashed #024F6E'
+              : '2px solid transparent',
           }}
         >
           {tasks.length > 0 ? (
@@ -325,11 +333,16 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
                 columnKey={columnKey}
                 index={idx}
                 onMenuClick={onMenuClick}
-                draggable={true}
               />
             ))
           ) : (
-            <Typography sx={{ textAlign: 'center', color: '#aaa', mt: 4 }}>
+            <Typography
+              sx={{
+                textAlign: 'center',
+                color: '#aaa',
+                mt: 4
+              }}
+            >
               No tasks
             </Typography>
           )}
@@ -371,13 +384,8 @@ export default function Tasks() {
       try {
         setLoading(true);
         setError('');
-
         const response = await TaskServices.getTasks();
-
-        console.log("GET TASKS RESPONSE:", response);
-
         const tasks = response?.data || [];
-
         setColumns(mapTasksToColumns(tasks));
       } catch (error) {
         console.error("FETCH TASKS ERROR:", error);
@@ -390,7 +398,6 @@ export default function Tasks() {
     fetchTasks();
   }, []);
 
-  // Get active task object from columns
   const getTaskById = (id) => {
     for (const colKey of Object.keys(columns)) {
       const found = columns[colKey].find(t => t._id === id);
@@ -400,7 +407,6 @@ export default function Tasks() {
   };
   const activeTask = activeId ? getTaskById(activeId) : null;
 
-  // Find which column contains a given taskId
   const findColumnOfTask = (id) => {
     if (columns.inProgress.find(t => t._id === id)) return 'inProgress';
     if (columns.paused.find(t => t._id === id)) return 'paused';
@@ -408,7 +414,12 @@ export default function Tasks() {
     return null;
   };
 
-  // Menu handlers
+  const columnStatusMap = {
+    inProgress: "in-progress",
+    paused: "paused",
+    done: "done",
+  };
+
   const handleMenuClick = (event, task) => {
     setAnchorEl(event.currentTarget);
     setSelectedTask(task);
@@ -419,60 +430,80 @@ export default function Tasks() {
     setSelectedTask(null);
   };
 
-  // DnD handlers
   const handleDragStart = (event) => {
-    console.log("🚀 ~ handleDragStart ~ event:", event)
-    setActiveId(event.active.id);
+    const sourceId = event.operation.source?.id;
+    setActiveId(sourceId);
   };
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
+  const handleDragEnd = async (event) => {
+
+    if (event.canceled) {
+      setActiveId(null);
+      return;
+    };
+
+    const { source, target } = event.operation;
+
     setActiveId(null);
 
-    if (!over) {
-      console.log("❌ No drop target detected");
+    if (!source || !target) {
       return;
-    }
-    const sourceColumnKey = findColumnOfTask(active.id);
-    const destinationColumnKey = over.id; // droppable id = column key
+    };
 
-    if (!sourceColumnKey || !destinationColumnKey) return;
-    if (sourceColumnKey === destinationColumnKey) return; // same column, for now skip reordering
-
-    console.log("SOURCE:", sourceColumnKey);
-    console.log("DESTINATION:", destinationColumnKey);
+    const activeId = source.id;
+    const destinationColumnKey = target.id;
+    const sourceColumnKey = findColumnOfTask(activeId);
 
     if (!sourceColumnKey || !destinationColumnKey) {
-      console.log("❌ Invalid source/destination");
       return;
     }
 
     if (sourceColumnKey === destinationColumnKey) {
-      console.log("⚠️ Same column");
       return;
     }
 
-    // Perform move
+    const newStatus = columnStatusMap[destinationColumnKey];
+
+    if (!newStatus) {
+      return;
+    }
+
     const sourceTasks = [...columns[sourceColumnKey]];
-    const taskIndex = sourceTasks.findIndex(t => t._id === active.id);
+
+    const taskIndex = sourceTasks.findIndex(
+      (task) => task._id === activeId
+    );
 
     if (taskIndex === -1) {
-      console.log("❌ Task not found");
       return;
+    };
+
+    try {
+      const response = await TaskServices.updateTask(activeId, {
+        status: newStatus,
+      });
+
+      const updatedTask = response?.data;
+
+      if (!updatedTask) {
+        throw new Error("Task status was not updated");
+      }
+
+      sourceTasks.splice(taskIndex, 1);
+
+      const destinationTasks = [
+        ...columns[destinationColumnKey],
+        updatedTask,
+      ];
+      setColumns((prev) => ({
+        ...prev,
+        [sourceColumnKey]: sourceTasks,
+        [destinationColumnKey]: destinationTasks,
+      }));
+    } catch (error) {
+      console.error("❌ DRAG STATUS UPDATE ERROR:", error);
     }
-
-    const [movedTask] = sourceTasks.splice(taskIndex, 1);
-
-    const destTasks = [...columns[destinationColumnKey], movedTask];
-
-    setColumns(prev => ({
-      ...prev,
-      [sourceColumnKey]: sourceTasks,
-      [destinationColumnKey]: destTasks,
-    }));
   };
-
-  const handleDragCancel = () => setActiveId(null);
 
   const handleSubmitTask = async (formData, editTask) => {
     if (editTask) {
@@ -483,8 +514,6 @@ export default function Tasks() {
           editTask._id,
           formData
         );
-
-        console.log("UPDATE TASK RESPONSE:", response);
 
         const updatedTask = response?.data;
 
@@ -531,7 +560,6 @@ export default function Tasks() {
       }
     }
 
-    // CREATE
     try {
       setCreatingTask(true);
 
@@ -628,8 +656,8 @@ export default function Tasks() {
       <CreateTask
         open={createTaskOpen}
         onClose={() => {
-          setCreateTaskOpen(false);
           setEditingTask(null);
+          setCreateTaskOpen(false);
         }}
         onSubmit={handleSubmitTask}
         loading={editingTask ? updatingTask : creatingTask}
@@ -671,7 +699,6 @@ export default function Tasks() {
           <DragDropProvider
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
-            onDragCancel={handleDragCancel}
           >
             <Grid container spacing={2}>
               <DroppableColumn
@@ -708,7 +735,6 @@ export default function Tasks() {
                   }}
                 >
                   <TaskCard
-                    draggable={draggable}
                     item={activeTask}
                   />
                 </Box>

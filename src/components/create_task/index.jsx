@@ -22,8 +22,8 @@ function CreateTask({ open, onClose, onSubmit, loading = false, editTask = null,
   });
 
   const handleClose = () => {
-    reset(defaultValues);
     onClose();
+    reset(defaultValues);
   };
 
   const submitHandler = async (data) => {
@@ -46,10 +46,8 @@ function CreateTask({ open, onClose, onSubmit, loading = false, editTask = null,
           ? editTask.dueDate.substring(0, 10)
           : "",
       });
-    } else {
-      reset(defaultValues);
     }
-  }, [editTask, reset]);
+  }, [editTask]);
 
   return (
     <Dialog
@@ -57,10 +55,29 @@ function CreateTask({ open, onClose, onSubmit, loading = false, editTask = null,
       onClose={handleClose}
       fullWidth
       maxWidth="sm"
+      slotProps={{
+        paper: {
+          sx: {
+            background: "#024F6E"
+          }
+        }
+      }}
     >
-      <DialogTitle>{editTask ? "Edit Task" : "Create Task"}</DialogTitle>
-      <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
+      <DialogTitle
+        sx={{
+          background: "#024F6E",
+          color: "#FFFFFF",
+        }}
+      >
+        {editTask ? "Edit Task" : "Create Task"}
+      </DialogTitle>
+      <DialogContent
+        sx={{
+          background: "#FFFFFF",
+          p: "24px !important"
+        }}
+      >
+        <Grid container spacing={2}>
           <Grid size={12}>
             <Controller
               name="title"
@@ -153,8 +170,10 @@ function CreateTask({ open, onClose, onSubmit, loading = false, editTask = null,
                   fullWidth
                   type="date"
                   label="Due Date"
-                  InputLabelProps={{
-                    shrink: true,
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true
+                    }
                   }}
                 />
               )}
@@ -178,11 +197,20 @@ function CreateTask({ open, onClose, onSubmit, loading = false, editTask = null,
           </Grid>
         </Grid>
       </DialogContent>
-
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions
+        sx={{
+          px: 3, pb: 3, pt: 0,
+          background: "#FFFFFF"
+        }}
+      >
         <Button
           onClick={handleClose}
           disabled={loading}
+          sx={{
+            borderRadius: "12px",
+            textTransform: "capitalize",
+            border: "1px solid #024F6E"
+          }}
         >
           Cancel
         </Button>
@@ -191,14 +219,19 @@ function CreateTask({ open, onClose, onSubmit, loading = false, editTask = null,
           variant="contained"
           onClick={handleSubmit(submitHandler)}
           disabled={loading}
+          sx={{
+            borderRadius: "12px",
+            textTransform: "capitalize",
+            border: "1px solid #024F6E"
+          }}
         >
           {loading
             ? editTask
               ? "Updating..."
               : "Creating..."
             : editTask
-              ? "Update Task"
-              : "Create Task"}
+              ? "Update"
+              : "Create"}
         </Button>
       </DialogActions>
     </Dialog>
