@@ -1,4 +1,5 @@
 import taskRoutes from "./routes";
+import Axios from "../../config/axios/axios";
 import { get, post, patch, deleted } from "../index";
 
 const TaskServices = {
@@ -7,8 +8,18 @@ const TaskServices = {
     return result;
   },
 
+  getTaskById: async (id) => {
+    const result = await get(taskRoutes.getTaskById(id));
+    return result;
+  },
+
   createTask: async (data) => {
     const result = await post(taskRoutes.createTask, data);
+    return result;
+  },
+
+  addSubTask: async (id, data) => {
+    const result = await post(taskRoutes.addSubTask(id), data);
     return result;
   },
 
@@ -17,8 +28,18 @@ const TaskServices = {
     return result;
   },
 
+  updateSubTask: async (id, subTaskId, data) => {
+    const result = await patch(taskRoutes.updateSubTask(id, subTaskId), data);
+    return result;
+  },
+
   deleteTask: async (id) => {
     const result = await deleted(taskRoutes.deleteTask(id));
+    return result;
+  },
+
+  deleteSubTask: async (id, subTaskId) => {
+    const result = await deleted(taskRoutes.deleteSubTask(id, subTaskId));
     return result;
   },
 
@@ -29,6 +50,18 @@ const TaskServices = {
 
   addAttachment: async (id, data) => {
     const result = await post(taskRoutes.addAttachment(id), data);
+    return result;
+  },
+
+  deleteAttachment: async (id, attachmentId) => {
+    const result = await deleted(taskRoutes.deleteAttachment(id, attachmentId));
+    return result;
+  },
+
+  downloadAttachment: async (id, attachmentId) => {
+    const result = await Axios.get(taskRoutes.downloadAttachment(id, attachmentId),
+      { responseType: "blob" }
+    );
     return result;
   },
 };

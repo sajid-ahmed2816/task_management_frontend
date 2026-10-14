@@ -121,7 +121,7 @@ function Sidebar() {
             </Typography>
             <IconButton
               onClick={handleDrawer}>
-              {!open ? <ChevronRight /> : <ChevronLeft />}
+              {!open ? <ChevronRight sx={{ color: "#FFFFFF" }} /> : <ChevronLeft sx={{ color: "#FFFFFF" }} />}
             </IconButton>
           </DrawerHeader>
           <Divider />
@@ -148,7 +148,7 @@ function Sidebar() {
                   >
                     <ListItemIcon
                       sx={[
-                        { minWidth: 0, justifyContent: 'center', },
+                        { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
                         open ? { mr: 1, } : { mr: 'auto', },
                       ]}
                     >
@@ -178,7 +178,7 @@ function Sidebar() {
                   >
                     <ListItemIcon
                       sx={[
-                        { minWidth: 0, justifyContent: 'center', },
+                        { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
                         open ? { mr: 1, } : { mr: 'auto', },
                       ]}
                     >
@@ -205,7 +205,7 @@ function Sidebar() {
                   >
                     <ListItemIcon
                       sx={[
-                        { minWidth: 0, justifyContent: 'center', },
+                        { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
                         open ? { mr: 1, } : { mr: 'auto', },
                       ]}
                     >
@@ -261,7 +261,7 @@ function Sidebar() {
                 <IconButton
                   onClick={handleLogout}
                 >
-                  <LogoutOutlined />
+                  <LogoutOutlined sx={{ color: "#FFFFFF" }} />
                 </IconButton>
               </Box>
             ) : (

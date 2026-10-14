@@ -1,11 +1,35 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import { Box, Button, Grid, Typography, LinearProgress, AvatarGroup, Avatar, IconButton, Menu, MenuItem, ListItemIcon, Divider, ListItemText, CircularProgress } from '@mui/material';
-import { CircleOutlined, ChangeHistoryRounded, StarBorderRounded, MessageOutlined, AttachFileOutlined, MoreHorizOutlined, DeleteOutlineRounded, AccountCircleOutlined, BorderColorOutlined, AssignmentIndOutlined } from '@mui/icons-material';
+import { CircleOutlined, ChangeHistoryRounded, StarBorderRounded, MessageOutlined, AttachFileOutlined, MoreHorizOutlined, DeleteOutlineRounded, AccountCircleOutlined, BorderColorOutlined, AssignmentIndOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { DragDropProvider, useDraggable, useDroppable, DragOverlay } from '@dnd-kit/react';
 import TaskServices from "../../api/tasks"
-import CreateTask from '../../components/create_task';
+import TaskDialog from '../../components/task_dialog';
+import TaskDetailsDialog from '../../components/task_details_dialog';
 
-function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete }) {
+function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick }) {
+  const handleClick = (option) => {
+    onClick(option);
+    handleClose();
+  };
+
+  const statusOptions = [
+    {
+      value: "in-progress",
+      label: "Move to In Progress",
+      Icon: CircleOutlined,
+    },
+    {
+      value: "paused",
+      label: "Move to Paused",
+      Icon: ChangeHistoryRounded,
+    },
+    {
+      value: "done",
+      label: "Move to Done",
+      Icon: StarBorderRounded,
+    },
+  ].filter((option) => option.value !== task?.status);
+
   return (
     <Menu
       open={open}
@@ -32,52 +56,40 @@ function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete }) {
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
-      <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
-        <ListItemIcon sx={{
-          "&.MuiListItemIcon-root": {
-            background: "#D4D4D4",
-            justifyContent: "center",
-            p: "2px",
-            borderRadius: "4px",
-            width: 24,
-            minWidth: 0
-          }
-        }}
+      {statusOptions.map(({ value, label, Icon }) => (
+        <MenuItem
+          key={value}
+          onClick={() => handleClick(value)}
+          sx={{ gap: 2, py: "3px !important" }}
         >
-          <ChangeHistoryRounded fontSize="small" sx={{ fill: "#024F6E !important" }} />
-        </ListItemIcon>
-        <ListItemText
-          sx={{
-            "& .MuiTypography-root": {
-              fontSize: "14px"
-            }
-          }}
-          primary={"Move to Paused"}
-        />
-      </MenuItem>
-      <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
-        <ListItemIcon sx={{
-          "&.MuiListItemIcon-root": {
-            background: "#D4D4D4",
-            justifyContent: "center",
-            p: "2px",
-            borderRadius: "4px",
-            width: 24,
-            minWidth: 0
-          }
-        }}
-        >
-          <StarBorderRounded fontSize="small" sx={{ fill: "#024F6E !important" }} />
-        </ListItemIcon>
-        <ListItemText
-          sx={{
-            "& .MuiTypography-root": {
-              fontSize: "14px"
-            }
-          }}
-          primary={"Move to Done"}
-        />
-      </MenuItem>
+          <ListItemIcon
+            sx={{
+              "&.MuiListItemIcon-root": {
+                background: "#D4D4D4",
+                justifyContent: "center",
+                p: "2px",
+                borderRadius: "4px",
+                width: 24,
+                minWidth: 0,
+              },
+            }}
+          >
+            <Icon
+              fontSize="small"
+              sx={{ fill: "#024F6E !important" }}
+            />
+          </ListItemIcon>
+
+          <ListItemText
+            sx={{
+              "& .MuiTypography-root": {
+                fontSize: "14px",
+              },
+            }}
+            primary={label}
+          />
+        </MenuItem>
+      ))}
       <Divider sx={{ borderColor: "#024F6E" }} />
       <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
         <ListItemIcon sx={{
@@ -182,7 +194,7 @@ function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete }) {
   );
 };
 
-function TaskCard({ item, onMenuClick }) {
+function TaskCard({ item, onMenuClick, onDetailsClick }) {
   const progress = item?.progressPercentage || 0;
   return (
     <Box
@@ -201,15 +213,30 @@ function TaskCard({ item, onMenuClick }) {
           <Typography variant="body1" fontWeight={600}>{item.title}</Typography>
           <Typography variant="body2" color="primary.main">{item.category}</Typography>
         </Box>
-        <IconButton sx={{ padding: 0 }} onClick={onMenuClick}>
-          <MoreHorizOutlined sx={{ fill: "#024F6E !important" }} />
-        </IconButton>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1
+          }}
+        >
+          <IconButton
+            sx={{ padding: 1 }}
+            onClick={onDetailsClick}
+            aria-label="View task details"
+          >
+            <VisibilityOutlined sx={{ fill: "#024F6E !important", fontSize: "16px" }} />
+          </IconButton>
+          <IconButton sx={{ padding: 0 }} onClick={onMenuClick}>
+            <MoreHorizOutlined sx={{ fill: "#024F6E !important" }} />
+          </IconButton>
+        </Box>
       </Box>
       <Typography
         variant="caption"
         sx={{
           color: '#808080', fontWeight: 500,
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical',
           overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word',
         }}
       >
@@ -257,7 +284,7 @@ function TaskCard({ item, onMenuClick }) {
   );
 };
 
-function DraggableTask({ task, columnKey, index, onMenuClick }) {
+function DraggableTask({ task, columnKey, index, onMenuClick, onDetailsClick }) {
   const draggable = useDraggable({
     id: task._id,
     data: {
@@ -277,12 +304,13 @@ function DraggableTask({ task, columnKey, index, onMenuClick }) {
       <TaskCard
         item={task}
         onMenuClick={(event) => onMenuClick(event, task)}
+        onDetailsClick={() => onDetailsClick(task)}
       />
     </Box>
   );
 };
 
-function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
+function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick, onDetailsClick, }) {
   const droppable = useDroppable({
     id: columnKey,
   });
@@ -321,8 +349,8 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
             transition: 'border 0.2s',
             boxShadow: "0px 0px 5px 3px #40404020",
             border: droppable.isDropTarget
-              ? '2px dashed #024F6E'
-              : '2px solid transparent',
+              ? '1px dashed #006086'
+              : '1px solid transparent',
           }}
         >
           {tasks.length > 0 ? (
@@ -333,6 +361,7 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick }) {
                 columnKey={columnKey}
                 index={idx}
                 onMenuClick={onMenuClick}
+                onDetailsClick={onDetailsClick}
               />
             ))
           ) : (
@@ -360,6 +389,18 @@ const mapTasksToColumns = (tasks = []) => {
   };
 };
 
+const mergeUpdatedTask = (oldTask, updatedTask) => {
+  if (!updatedTask) return oldTask;
+  if (!oldTask) return updatedTask;
+
+  return {
+    ...oldTask,
+    ...updatedTask,
+    commentCount: updatedTask?.commentCount ?? oldTask.commentCount ?? 0,
+    attachmentCount: updatedTask?.attachmentCount ?? oldTask.attachmentCount ?? 0,
+  }
+};
+
 export default function Tasks() {
   const [columns, setColumns] = useState({
     inProgress: [],
@@ -376,25 +417,26 @@ export default function Tasks() {
   const [updatingTask, setUpdatingTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [deletingTask, setDeletingTask] = useState(false);
+  const [taskDetails, setTaskDetails] = useState(null);
 
   const open = Boolean(anchorEl);
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const response = await TaskServices.getTasks();
-        const tasks = response?.data || [];
-        setColumns(mapTasksToColumns(tasks));
-      } catch (error) {
-        console.error("FETCH TASKS ERROR:", error);
-        setError(error?.message || "Failed to load tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await TaskServices.getTasks();
+      const tasks = response?.data || [];
+      setColumns(mapTasksToColumns(tasks));
+    } catch (error) {
+      console.error("FETCH TASKS ERROR:", error);
+      setError(error?.message || "Failed to load tasks");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchTasks();
   }, []);
 
@@ -405,6 +447,7 @@ export default function Tasks() {
     }
     return null;
   };
+
   const activeTask = activeId ? getTaskById(activeId) : null;
 
   const findColumnOfTask = (id) => {
@@ -491,10 +534,27 @@ export default function Tasks() {
 
       sourceTasks.splice(taskIndex, 1);
 
+      const oldTask = columns[sourceColumnKey].find((task) => task._id === activeId);
+      const mergedTask = mergeUpdatedTask(oldTask, updatedTask);
+
+      sourceTasks.splice(taskIndex, 1);
+
       const destinationTasks = [
         ...columns[destinationColumnKey],
-        updatedTask,
+        mergedTask,
       ];
+
+      setColumns((prev) => ({
+        ...prev,
+        [sourceColumnKey]: prev[sourceColumnKey].filter(
+          (task) => task._id !== activeId
+        ),
+        [destinationColumnKey]: [
+          ...prev[destinationColumnKey],
+          mergedTask,
+        ],
+      }));
+
       setColumns((prev) => ({
         ...prev,
         [sourceColumnKey]: sourceTasks,
@@ -532,7 +592,7 @@ export default function Tasks() {
             .flat()
             .map((task) =>
               task._id === updatedTask._id
-                ? updatedTask
+                ? mergeUpdatedTask(task, updatedTask)
                 : task
             )
             .forEach((task) => {
@@ -635,6 +695,50 @@ export default function Tasks() {
     }
   };
 
+  const handleClick = async (status) => {
+    if (!selectedTask?._id) return;
+
+    try {
+      const response = await TaskServices.updateTask(selectedTask._id, { status });
+      const updatedTask = response?.data;
+
+      if (!updatedTask) {
+        throw new Error("Task status was not updated");
+      };
+
+      setColumns((prev) => {
+        const newColumns = {
+          inProgress: [],
+          paused: [],
+          done: [],
+        };
+
+        const columnMap = {
+          "in-progress": "inProgress",
+          paused: "paused",
+          done: "done",
+        };
+
+        Object.values(prev).flat().map((task) =>
+          task._id === updatedTask._id
+            ? mergeUpdatedTask(task, updatedTask)
+            : task
+        ).forEach((task) => {
+          const columnKey = columnMap[task.status];
+
+          if (columnKey) {
+            newColumns[columnKey].push(task);
+          };
+        });
+        return newColumns;
+      });
+
+      handleMenuClose();
+    } catch (error) {
+      console.error("MENU STATUS UPDATE ERROR:", error);
+    };
+  };
+
   if (loading) {
     return (
       <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -653,7 +757,7 @@ export default function Tasks() {
 
   return (
     <Fragment>
-      <CreateTask
+      <TaskDialog
         open={createTaskOpen}
         onClose={() => {
           setEditingTask(null);
@@ -670,6 +774,28 @@ export default function Tasks() {
         task={selectedTask}
         onDelete={handleDeleteTask}
         onEdit={handleEditTask}
+        onClick={(o) => handleClick(o)}
+      />
+      <TaskDetailsDialog
+        open={Boolean(taskDetails)}
+        task={taskDetails}
+        onClose={() => setTaskDetails(null)}
+        onTaskUpdated={(taskId, changes) => {
+          setColumns((prev) => {
+            const updateColumn = (items) =>
+              items.map((item) =>
+                item._id === taskId
+                  ? { ...item, ...changes }
+                  : item
+              );
+
+            return {
+              inProgress: updateColumn(prev.inProgress),
+              paused: updateColumn(prev.paused),
+              done: updateColumn(prev.done),
+            };
+          });
+        }}
       />
 
       <Grid container spacing={2}>
@@ -707,6 +833,7 @@ export default function Tasks() {
                 Icon={CircleOutlined}
                 tasks={columns.inProgress}
                 onMenuClick={handleMenuClick}
+                onDetailsClick={(task) => setTaskDetails(task)}
               />
               <DroppableColumn
                 columnKey="paused"
@@ -714,6 +841,7 @@ export default function Tasks() {
                 Icon={ChangeHistoryRounded}
                 tasks={columns.paused}
                 onMenuClick={handleMenuClick}
+                onDetailsClick={(task) => setTaskDetails(task)}
               />
               <DroppableColumn
                 columnKey="done"
@@ -721,6 +849,7 @@ export default function Tasks() {
                 Icon={StarBorderRounded}
                 tasks={columns.done}
                 onMenuClick={handleMenuClick}
+                onDetailsClick={(task) => setTaskDetails(task)}
               />
             </Grid>
 

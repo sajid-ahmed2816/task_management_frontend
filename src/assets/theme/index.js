@@ -63,13 +63,6 @@ const theme = createTheme({
         }
       }
     },
-    MuiSvgIcon: {
-      styleOverrides: {
-        root: {
-          fill: "white"
-        }
-      }
-    }
   },
 });
 
