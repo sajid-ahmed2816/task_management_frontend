@@ -17,9 +17,9 @@ instance.interceptors.request.use((request) => {
 });
 
 instance.interceptors.response.use((response) => {
-  if (response) {
-    return response;
-  };
+  return response;
+}, (error) => {
+  Promise.reject(error)
 });
 
 export default instance;
