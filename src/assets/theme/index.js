@@ -101,6 +101,21 @@ const theme = createTheme({
           color: "#FFFFFF",
         }
       }
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        head: {
+          background: "#024F6E",
+          color: "#FFFFFF"
+        }
+      }
+    },
+    MuiPopover: {
+      styleOverrides: {
+        paper: {
+          borderRadius: "12px"
+        }
+      }
     }
   },
 });

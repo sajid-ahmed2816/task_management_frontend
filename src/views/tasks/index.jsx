@@ -5,6 +5,7 @@ import { DragDropProvider, useDraggable, useDroppable, DragOverlay } from '@dnd-
 import TaskServices from "../../api/tasks"
 import TaskDialog from '../../components/task_dialog';
 import TaskDetailsDialog from '../../components/task_details_dialog';
+import toastify from '../../components/toast';
 
 function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick }) {
   const handleClick = (option) => {
@@ -343,7 +344,7 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick, onDetails
             flexDirection: 'column',
             gap: 1,
             borderRadius: '16px',
-            height: 'calc(100vh - 136px)',
+            height: 'calc(100vh - 153px)',
             overflowY: 'auto',
             padding: 1,
             transition: 'border 0.2s',
@@ -570,16 +571,13 @@ export default function Tasks() {
       try {
         setUpdatingTask(true);
 
-        const response = await TaskServices.updateTask(
-          editTask._id,
-          formData
-        );
-
+        const promise = await TaskServices.updateTask(editTask._id, formData);
+        const response = await toastify(promise);
         const updatedTask = response?.data;
 
         if (!updatedTask) {
           throw new Error("Task was not updated");
-        }
+        };
 
         setColumns((prev) => {
           const newColumns = {
@@ -594,8 +592,7 @@ export default function Tasks() {
               task._id === updatedTask._id
                 ? mergeUpdatedTask(task, updatedTask)
                 : task
-            )
-            .forEach((task) => {
+            ).forEach((task) => {
               if (task.status === "in-progress") {
                 newColumns.inProgress.push(task);
               } else if (task.status === "paused") {
@@ -613,7 +610,7 @@ export default function Tasks() {
 
         return true;
       } catch (error) {
-        console.error("UPDATE TASK ERROR:", error);
+        toastify(error);
         return false;
       } finally {
         setUpdatingTask(false);
@@ -623,13 +620,20 @@ export default function Tasks() {
     try {
       setCreatingTask(true);
 
-      const response = await TaskServices.createTask(formData);
+      const promise = TaskServices.createTask(formData);
+      const response = await toastify(promise);
 
       const createdTask = response?.data;
 
       if (!createdTask) {
         throw new Error("Task was not created");
-      }
+      };
+
+      const normalizedTask = {
+        ...createdTask,
+        attachmentCount: createdTask.attachments?.length ?? 0,
+        commentCount: createdTask.comments?.length ?? 0,
+      };
 
       setColumns((prev) => {
         const columnMap = {
@@ -638,14 +642,13 @@ export default function Tasks() {
           done: "done",
         };
 
-        const columnKey =
-          columnMap[createdTask.status] || "inProgress";
+        const columnKey = columnMap[createdTask.status] || "inProgress";
 
         return {
           ...prev,
           [columnKey]: [
             ...prev[columnKey],
-            createdTask,
+            normalizedTask,
           ],
         };
       });
@@ -673,7 +676,8 @@ export default function Tasks() {
     try {
       setDeletingTask(true);
 
-      await TaskServices.deleteTask(task._id);
+      const promise = TaskServices.deleteTask(task._id);
+      await toastify(promise);
 
       setColumns((prev) => ({
         inProgress: prev.inProgress.filter(
@@ -818,6 +822,10 @@ export default function Tasks() {
               +
             </Button>
           </Box>
+        </Grid>
+
+        <Grid size={12}>
+          <Divider sx={{ borderColor: "#024F6E" }} />
         </Grid>
 
         <Grid size={12}>

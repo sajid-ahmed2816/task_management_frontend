@@ -3,10 +3,11 @@ import { Box, DialogTitle, DialogContent, DialogActions, TextField, Button, Menu
 import { ArchiveRounded, AttachFileOutlined, Close, CodeRounded, DescriptionRounded, ImageRounded, InsertDriveFileRounded, PictureAsPdfRounded, SlideshowRounded, TableChartRounded } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import Dialog from "../dialog";
+import useStore from "../../config/zustand";
 
 const defaultValues = {
   title: "",
-  category: "",
+  project: "",
   description: "",
   status: "in-progress",
   priority: "medium",
@@ -15,6 +16,8 @@ const defaultValues = {
 };
 
 function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null, }) {
+  const projects = useStore((state) => state.projects);
+
   const {
     control,
     handleSubmit,
@@ -150,19 +153,29 @@ function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null,
 
           <Grid size={6}>
             <Controller
-              name="category"
+              name="project"
               control={control}
               rules={{
-                required: "Category is required",
+                required: "Project is required",
               }}
               render={({ field }) => (
                 <TextField
                   {...field}
+                  select
                   fullWidth
-                  label="Category"
-                  error={!!errors.category}
-                  helperText={errors.category?.message}
-                />
+                  label="Project"
+                  error={!!errors.project}
+                  helperText={errors.project?.message}
+                >
+                  {projects?.map((project) => (
+                    <MenuItem
+                      key={project?._id}
+                      value={project?._id}
+                    >
+                      {project?.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
               )}
             />
           </Grid>

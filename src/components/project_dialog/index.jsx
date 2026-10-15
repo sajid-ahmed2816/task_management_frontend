@@ -16,7 +16,7 @@ const defaultValues = {
   link: "",
 };
 
-function ProjectDialog({ open, onClose, onSubmit, loading = false, editProject = null, }) {
+function ProjectDialog({ open, onClose, onSubmit, loading = false, editProject = null, direction }) {
   const {
     control,
     handleSubmit,
@@ -60,6 +60,7 @@ function ProjectDialog({ open, onClose, onSubmit, loading = false, editProject =
       onClose={handleClose}
       fullWidth
       maxWidth="sm"
+      direction={direction}
     >
       <DialogTitle>
         {editProject ? "Edit Project" : "Create Project"}

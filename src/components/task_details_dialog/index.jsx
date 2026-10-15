@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Avatar, Box, Button, Checkbox, Chip, CircularProgress, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText, TextField, Typography } from "@mui/material";
-import { Adjust, AttachFileOutlined, ChangeHistoryRounded, CircleOutlined, PictureAsPdfRounded, ImageRounded, DescriptionRounded, TableChartRounded, SlideshowRounded, CodeRounded, ArchiveRounded, InsertDriveFileRounded, Description, Event, PriorityHigh, Sell, SendRounded, StarBorderRounded, Close, DeleteOutlineOutlined } from "@mui/icons-material";
+import { Adjust, AttachFileOutlined, ChangeHistoryRounded, CircleOutlined, PictureAsPdfRounded, ImageRounded, DescriptionRounded, TableChartRounded, SlideshowRounded, CodeRounded, ArchiveRounded, InsertDriveFileRounded, Description, Event, PriorityHigh, SendRounded, StarBorderRounded, Close, DeleteOutlineOutlined, WorkHistoryOutlined } from "@mui/icons-material";
 import TaskServices from "../../api/tasks";
 import Dialog from "../dialog";
 
@@ -536,10 +536,10 @@ export default function TaskDetailsDialog({
                     gap: 1
                   }}
                 >
-                  <Sell sx={{ fill: "#8A8A8A", fontSize: "17px" }} />
-                  <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Category</Typography>
+                  <WorkHistoryOutlined sx={{ fill: "#8A8A8A", fontSize: "17px" }} />
+                  <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Project</Typography>
                 </Box>
-                <Typography variant="body2">{details.category || "Uncategorized"}</Typography>
+                <Typography variant="body2">{details.project?.name || "Uncategorized"}</Typography>
               </Box>
 
               <Box

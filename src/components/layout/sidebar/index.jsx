@@ -7,6 +7,7 @@ import useAuth from '../../../hooks/useAuth';
 import menu from './menu';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import useStore from '../../../config/zustand';
 
 const drawerWidth = 290;
 
@@ -71,16 +72,14 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 function Sidebar() {
-  const [open, setOpen] = useState(true);
-  const [expand, setExpand] = useState({});
-
   const navigate = useNavigate();
 
   const { user, userLogout } = useAuth();
   const { name, email } = user || {};
+  const { isDrawerOpen: open, toggleDrawer } = useStore();
 
   const handleDrawer = () => {
-    setOpen((prev) => !prev);
+    toggleDrawer();
   };
 
   const hanldeNavigate = (path) => {
