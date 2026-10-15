@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import { Box, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem, Grid, Typography, IconButton } from "@mui/material";
+import { Box, DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem, Grid, Typography, IconButton } from "@mui/material";
 import { ArchiveRounded, AttachFileOutlined, Close, CodeRounded, DescriptionRounded, ImageRounded, InsertDriveFileRounded, PictureAsPdfRounded, SlideshowRounded, TableChartRounded } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
+import Dialog from "../dialog";
 
 const defaultValues = {
   title: "",
@@ -121,28 +122,12 @@ function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null,
       onClose={handleClose}
       fullWidth
       maxWidth="sm"
-      slotProps={{
-        paper: {
-          sx: {
-            background: "#024F6E"
-          }
-        }
-      }}
     >
-      <DialogTitle
-        sx={{
-          background: "#024F6E",
-          color: "#FFFFFF",
-        }}
-      >
+      <DialogTitle>
         {editTask ? "Edit Task" : "Create Task"}
       </DialogTitle>
-      <DialogContent
-        sx={{
-          background: "#FFFFFF",
-          p: "24px !important"
-        }}
-      >
+
+      <DialogContent>
         <Grid container spacing={2}>
           <Grid size={12}>
             <Controller
@@ -276,10 +261,6 @@ function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null,
                   <Button
                     component="label"
                     variant="outlined"
-                    sx={{
-                      alignSelf: "flex-start",
-                      textTransform: "capitalize",
-                    }}
                   >
                     <AttachFileOutlined sx={{ mr: 1 }} />
                     Select Attachments
@@ -377,20 +358,11 @@ function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null,
           </Grid>
         </Grid>
       </DialogContent>
-      <DialogActions
-        sx={{
-          px: 3, pb: 3, pt: 0,
-          background: "#FFFFFF"
-        }}
-      >
+
+      <DialogActions>
         <Button
           onClick={handleClose}
           disabled={loading}
-          sx={{
-            borderRadius: "12px",
-            textTransform: "capitalize",
-            border: "1px solid #024F6E"
-          }}
         >
           Cancel
         </Button>
@@ -399,11 +371,6 @@ function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null,
           variant="contained"
           onClick={handleSubmit(submitHandler)}
           disabled={loading}
-          sx={{
-            borderRadius: "12px",
-            textTransform: "capitalize",
-            border: "1px solid #024F6E"
-          }}
         >
           {loading
             ? editTask

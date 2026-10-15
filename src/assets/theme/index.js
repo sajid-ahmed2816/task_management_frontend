@@ -24,6 +24,7 @@ const theme = createTheme({
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
             borderColor: theme.palette.primary.main,
           },
+          borderRadius: "12px"
         }),
       },
     },
@@ -53,6 +54,12 @@ const theme = createTheme({
         },
         "& .Mui-disabled": {
           color: '#000000B3'
+        },
+        root: {
+          borderRadius: "12px",
+          textTransform: "capitalize",
+          border: "1px solid #024F6E",
+          whiteSpace: "nowrap"
         }
       },
     },
@@ -63,6 +70,38 @@ const theme = createTheme({
         }
       }
     },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          textTransform: "capitalize"
+        }
+      }
+    },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          background: "#FFFFFF",
+          padding: "24px !important"
+        }
+      }
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          paddingInline: 24,
+          paddingBottom: 24,
+          paddingTop: 0,
+          background: "#FFFFFF"
+        }
+      }
+    },
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: {
+          color: "#FFFFFF",
+        }
+      }
+    }
   },
 });
 

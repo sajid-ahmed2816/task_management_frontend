@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from "react";
-import { Avatar, Box, Button, Checkbox, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, Checkbox, Chip, CircularProgress, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText, TextField, Typography } from "@mui/material";
 import { Adjust, AttachFileOutlined, ChangeHistoryRounded, CircleOutlined, PictureAsPdfRounded, ImageRounded, DescriptionRounded, TableChartRounded, SlideshowRounded, CodeRounded, ArchiveRounded, InsertDriveFileRounded, Description, Event, PriorityHigh, Sell, SendRounded, StarBorderRounded, Close, DeleteOutlineOutlined } from "@mui/icons-material";
 import TaskServices from "../../api/tasks";
+import Dialog from "../dialog";
 
 export default function TaskDetailsDialog({
   open,
@@ -391,29 +392,12 @@ export default function TaskDetailsDialog({
       onClose={onClose}
       fullWidth
       maxWidth="md"
-      slotProps={{
-        paper: {
-          sx: {
-            background: "#024F6E",
-          }
-        }
-      }}
     >
-      <DialogTitle
-        sx={{
-          color: "#FFFFFF",
-        }}
-      >
+      <DialogTitle>
         Task Details
       </DialogTitle>
 
-      <DialogContent
-        sx={{
-          p: 3,
-          pt: "24px !important",
-          background: "#FFFFFF"
-        }}
-      >
+      <DialogContent>
         {loading ? (
           <Box
             sx={{
@@ -621,7 +605,6 @@ export default function TaskDetailsDialog({
                   variant="contained"
                   onClick={handleAddSubTask}
                   disabled={!subTaskTitle.trim() || subTaskLoading}
-                  sx={{ textTransform: "capitalize", whiteSpace: "nowrap" }}
                 >
                   {subTaskLoading ? (
                     <CircularProgress size={20} color="inherit" />
@@ -846,7 +829,6 @@ export default function TaskDetailsDialog({
                   component="label"
                   variant="outlined"
                   startIcon={<AttachFileOutlined sx={{ fill: "#024F6E !important" }} />}
-                  sx={{ textTransform: "capitalize" }}
                 >
                   Select Files
                   <input
@@ -869,7 +851,6 @@ export default function TaskDetailsDialog({
                   variant="contained"
                   onClick={handleUpload}
                   disabled={!files.length || uploadLoading}
-                  sx={{ textTransform: "capitalize" }}
                 >
                   {uploadLoading ? "Uploading..." : "Upload"}
                 </Button>
@@ -1058,11 +1039,10 @@ export default function TaskDetailsDialog({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pt: 0, pb: 3, background: "#FFFFFF" }}>
+      <DialogActions>
         <Button
           variant="contained"
           onClick={onClose}
-          sx={{ textTransform: "capitalize" }}
         >
           Close
         </Button>

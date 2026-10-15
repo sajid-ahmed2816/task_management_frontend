@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, forwardRef, Fragment } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Grid, IconButton, TextField, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Slide, CircularProgress } from '@mui/material';
+import { Box, Button, Grid, IconButton, TextField, Typography, DialogActions, DialogContent, DialogContentText, DialogTitle, Slide, CircularProgress } from '@mui/material';
 import { Close, Visibility, VisibilityOff } from '@mui/icons-material';
 import { OTPInput } from 'input-otp';
 import gsap from 'gsap';
 import { useForm } from "react-hook-form";
+import Dialog from '../../components/dialog';
 import AuthServices from '../../api/auth';
 import toastify from '../../components/toast';
 import useAuth from "../../hooks/useAuth";

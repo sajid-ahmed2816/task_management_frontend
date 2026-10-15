@@ -811,7 +811,6 @@ export default function Tasks() {
                 setCreateTaskOpen(true);
               }}
               sx={{
-                borderRadius: "12px",
                 fontSize: "20px",
                 lineHeight: 1.2,
               }}
