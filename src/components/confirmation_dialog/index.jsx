@@ -52,17 +52,14 @@ function ConfirmationDialog({ open, handleClose, handleDelete, title, descriptio
         <Button
           color="error"
           variant='contained'
-          startIcon={isDeleting ?
-            <CircularProgress size="18px" sx={{ color: "#FFFFFF" }} /> :
-            <DeleteOutlineRounded />
-          }
+          startIcon={<DeleteOutlineRounded />}
           onClick={handleDelete}
           disabled={isDeleting}
           sx={{
             border: "none"
           }}
         >
-          {isDeleting ? "Deleting..." : "Delete"}
+          Delete
         </Button>
       </DialogActions>
     </Dialog>

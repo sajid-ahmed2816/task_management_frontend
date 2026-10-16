@@ -15,9 +15,12 @@ function App() {
   const { user } = useAuth();
   const { token } = user || {};
 
-  const setProjects = useStore((state) => state.setProjects);
-  const setProjectsLoading = useStore((state) => state.setProjectsLoading);
-  const setProjectsError = useStore((state) => state.setProjectsError);
+  const {
+    setAllProjects,
+    setAllProjectsLoading,
+    setAllProjectsError,
+    projectsRefreshKey
+  } = useStore();
 
   useEffect(() => {
     if (!token) return;
@@ -26,23 +29,23 @@ function App() {
 
     const fetchProjects = async () => {
       try {
-        setProjectsLoading(true);
-        setProjectsError(null);
+        setAllProjectsLoading(true);
+        setAllProjectsError(null);
 
-        const result = await ProjectServices.getProjects();
+        const result = await ProjectServices.getProjects({ page: 1, limit: "all" });
 
         if (!isMounted) return;
 
         const projects = result?.data?.projects
 
-        setProjects(projects);
+        setAllProjects(projects);
       } catch (error) {
         if (!isMounted) return;
 
-        setProjectsError(error?.message);
+        setAllProjectsError(error?.message);
       } finally {
         if (isMounted) {
-          setProjectsLoading(false);
+          setAllProjectsLoading(false);
         }
       }
     };
@@ -54,9 +57,10 @@ function App() {
     };
   }, [
     token,
-    setProjects,
-    setProjectsLoading,
-    setProjectsError,
+    setAllProjects,
+    setAllProjectsLoading,
+    setAllProjectsError,
+    projectsRefreshKey
   ]);
 
   return (

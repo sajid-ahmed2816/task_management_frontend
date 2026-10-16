@@ -15,6 +15,22 @@ const useStore = create(persist((set) => ({
   setProjectsError: (projectsError) => set({ projectsError }),
   //Projects for task dialog
 
+  //Refresh trigger
+  projectsRefreshKey: 0,
+  refreshAllProjects: () => set((state) => ({
+    projectsRefreshKey: state.projectsRefreshKey + 1,
+  })),
+
+  // All projects for TaskDialog
+  allProjects: [],
+  allProjectsLoading: false,
+  allProjectsError: null,
+
+  setAllProjects: (allProjects) => set({ allProjects }),
+  setAllProjectsLoading: (allProjectsLoading) => set({ allProjectsLoading }),
+  setAllProjectsError: (allProjectsError) => set({ allProjectsError }),
+  // All projects for TaskDialog
+
   //Projects module filter
   projectsPage: 0,
   projectsRowsPerPage: 10,

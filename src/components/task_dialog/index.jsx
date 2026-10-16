@@ -16,7 +16,7 @@ const defaultValues = {
 };
 
 function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null, }) {
-  const projects = useStore((state) => state.projects);
+  const { allProjects } = useStore();
 
   const {
     control,
@@ -167,7 +167,7 @@ function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null,
                   error={!!errors.project}
                   helperText={errors.project?.message}
                 >
-                  {projects?.map((project) => (
+                  {allProjects?.map((project) => (
                     <MenuItem
                       key={project?._id}
                       value={project?._id}

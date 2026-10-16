@@ -7,7 +7,6 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 function Dialog(props) {
-  console.log(props);
   return (
     <MuiDialog
       {...props}

@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Box, Button, Chip, CircularProgress, Grid, IconButton, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, TextField, Popover, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, Stack, Divider, } from '@mui/material';
 import ProjectServices from '../../api/projects';
-import { DeleteOutlineRounded, EditOutlined } from '@mui/icons-material';
+import { DeleteOutlineRounded, EditOutlined, SearchRounded } from '@mui/icons-material';
 import ProjectDialog from '../../components/project_dialog';
 import ConfirmationDialog from '../../components/confirmation_dialog';
 import getChipColor from '../../utils/GetChipColor';
@@ -11,7 +11,6 @@ import useStore from '../../config/zustand';
 const tableHead = ["Name", "Project Owner", "Start Date", "Due Date", "Status", "Priority", "Actions"];
 
 function Projects() {
-  const [projects, setProjects] = useState([]);
   const [projectsCount, setProjectsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
@@ -30,6 +29,9 @@ function Projects() {
   });
 
   const {
+    projects,
+    setProjects,
+    refreshAllProjects,
     projectsPage: page,
     projectsRowsPerPage: rowsPerPage,
     projectsFilters: filters,
@@ -103,6 +105,7 @@ function Projects() {
         if (response.status) {
           setSelectedProject(null);
           setIsProjectDialogOpen(false);
+          refreshAllProjects();
           getProjects();
         };
         return true;
@@ -127,6 +130,7 @@ function Projects() {
 
       if (response.status) {
         setIsProjectDialogOpen(false);
+        refreshAllProjects();
         getProjects();
       }
       return true;
@@ -147,6 +151,7 @@ function Projects() {
         getProjects();
         setIsConfirmationDialogOpen(false);
         setSelectedProject(null);
+        refreshAllProjects();
       };
     } catch (error) {
       toastify(error);
@@ -422,6 +427,11 @@ function Projects() {
           <Grid container spacing={2} sx={{ justifyContent: "flex-end" }}>
             <Grid size={4}>
               <TextField
+                slotProps={{
+                  input: {
+                    startAdornment: <SearchRounded sx={{ color: "#B8B8B8" }} />
+                  }
+                }}
                 placeholder={"Search projects"}
                 size={"small"}
                 fullWidth
@@ -429,6 +439,11 @@ function Projects() {
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setProjectsPage(0);
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    gap: 1
+                  }
                 }}
               />
             </Grid>
