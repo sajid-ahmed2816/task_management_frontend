@@ -1,13 +1,11 @@
 export const ErrorHandler = (error) => {
-  if (error.response) {
-    if (error.response.status == 403 || error.response.status == 401) {
-      localStorage.clear();
-      window.location.href = "/login"
-      return error.response.data.message;
-    } else {
-      return error.response.data;
-    };
-  } else {
-    return error;
-  }
+  const message =
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.message ||
+    "Something went wrong. Please try again.";
+
+  // Sirf error message return karo.
+  // Yahan localStorage.clear() ya window.location.href mat chalao.
+  return new Error(message);
 };

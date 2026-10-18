@@ -3,7 +3,7 @@ import { DialogTitle, DialogContent, DialogActions, TextField, Button, MenuItem,
 import { useForm, Controller } from "react-hook-form";
 import Dialog from "../dialog";
 
-const { _id } = JSON.parse(localStorage.getItem("user"));
+const { _id } = JSON.parse(localStorage.getItem("user") || "{}");
 
 const defaultValues = {
   name: "",
