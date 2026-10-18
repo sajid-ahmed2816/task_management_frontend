@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import { Box, Button, Grid, Typography, LinearProgress, AvatarGroup, Avatar, IconButton, Menu, MenuItem, ListItemIcon, Divider, ListItemText, CircularProgress } from '@mui/material';
+import { Box, Button, Grid, Typography, LinearProgress, AvatarGroup, Avatar, IconButton, Menu, MenuItem, ListItemIcon, Divider, ListItemText, CircularProgress, Stack, Skeleton } from '@mui/material';
 import { CircleOutlined, ChangeHistoryRounded, StarBorderRounded, MessageOutlined, AttachFileOutlined, MoreHorizOutlined, DeleteOutlineRounded, AccountCircleOutlined, BorderColorOutlined, AssignmentIndOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { DragDropProvider, useDraggable, useDroppable, DragOverlay } from '@dnd-kit/react';
 import TaskServices from "../../api/tasks"
@@ -9,7 +9,7 @@ import toastify from '../../components/toast';
 
 function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick }) {
   const handleClick = (option) => {
-    onClick(option);
+    onClick({ status: option, project: task.project });
     handleClose();
   };
 
@@ -289,6 +289,7 @@ function DraggableTask({ task, columnKey, index, onMenuClick, onDetailsClick }) 
   const draggable = useDraggable({
     id: task._id,
     data: {
+      projectId: task.project,
       column: columnKey,
       index,
     },
@@ -344,7 +345,7 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick, onDetails
             flexDirection: 'column',
             gap: 1,
             borderRadius: '16px',
-            height: 'calc(100vh - 153px)',
+            height: 'calc(100vh - 167px)',
             overflowY: 'auto',
             padding: 1,
             transition: 'border 0.2s',
@@ -480,13 +481,12 @@ export default function Tasks() {
   };
 
   const handleDragEnd = async (event) => {
-
     if (event.canceled) {
       setActiveId(null);
       return;
     };
 
-    const { source, target } = event.operation;
+    const { source, target, source: { data: { projectId } } } = event.operation;
 
     setActiveId(null);
 
@@ -523,10 +523,12 @@ export default function Tasks() {
     };
 
     try {
-      const response = await TaskServices.updateTask(activeId, {
+      const promise = TaskServices.updateTask(activeId, {
         status: newStatus,
+        project: projectId
       });
 
+      const response = await toastify(promise);
       const updatedTask = response?.data;
 
       if (!updatedTask) {
@@ -701,9 +703,9 @@ export default function Tasks() {
 
   const handleClick = async (status) => {
     if (!selectedTask?._id) return;
-
     try {
-      const response = await TaskServices.updateTask(selectedTask._id, { status });
+      const promise = TaskServices.updateTask(selectedTask._id, status);
+      const response = await toastify(promise);
       const updatedTask = response?.data;
 
       if (!updatedTask) {
@@ -741,14 +743,6 @@ export default function Tasks() {
     } catch (error) {
       console.error("MENU STATUS UPDATE ERROR:", error);
     };
-  };
-
-  if (loading) {
-    return (
-      <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    )
   };
 
   if (error) {
@@ -804,10 +798,19 @@ export default function Tasks() {
 
       <Grid container spacing={2}>
         <Grid size={12}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h1" sx={{ fontSize: 24, fontWeight: 600 }}>
-              Tasks
-            </Typography>
+          <Stack
+            spacing={2}
+            direction={{ xs: "column", sm: "row" }}
+            sx={{ alignItems: { xs: "flex-start", sm: "center" }, justifyContent: 'space-between' }}
+          >
+            <Box>
+              <Typography variant="h1" sx={{ fontSize: 24, fontWeight: 600 }}>
+                Tasks
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Manage your project's tasks.
+              </Typography>
+            </Box>
             <Button
               variant="contained"
               onClick={() => {
@@ -821,7 +824,7 @@ export default function Tasks() {
             >
               +
             </Button>
-          </Box>
+          </Stack>
         </Grid>
 
         <Grid size={12}>
@@ -829,54 +832,91 @@ export default function Tasks() {
         </Grid>
 
         <Grid size={12}>
-          <DragDropProvider
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
+          {loading ? (
             <Grid container spacing={2}>
-              <DroppableColumn
-                columnKey="inProgress"
-                title="In Progress"
-                Icon={CircleOutlined}
-                tasks={columns.inProgress}
-                onMenuClick={handleMenuClick}
-                onDetailsClick={(task) => setTaskDetails(task)}
-              />
-              <DroppableColumn
-                columnKey="paused"
-                title="Paused"
-                Icon={ChangeHistoryRounded}
-                tasks={columns.paused}
-                onMenuClick={handleMenuClick}
-                onDetailsClick={(task) => setTaskDetails(task)}
-              />
-              <DroppableColumn
-                columnKey="done"
-                title="Done"
-                Icon={StarBorderRounded}
-                tasks={columns.done}
-                onMenuClick={handleMenuClick}
-                onDetailsClick={(task) => setTaskDetails(task)}
-              />
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Grid key={i} size={4} >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Skeleton variant='rounded' />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1,
+                        borderRadius: '16px',
+                        height: 'calc(100vh - 167px)',
+                        overflowY: 'auto',
+                        padding: 1,
+                        transition: 'border 0.2s',
+                        boxShadow: "0px 0px 5px 3px #40404020",
+                      }}
+                    >
+                      {Array.from({ length: 3 }).map((_, j) => (
+                        <Skeleton
+                          key={j}
+                          variant='rounded'
+                          sx={{
+                            width: "100%",
+                            height: "173.94px",
+                            borderRadius: "12px"
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                </Grid>
+              ))}
             </Grid>
+          ) : (
+            <DragDropProvider
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <Grid container spacing={2}>
+                <DroppableColumn
+                  columnKey="inProgress"
+                  title="In Progress"
+                  Icon={CircleOutlined}
+                  tasks={columns.inProgress}
+                  onMenuClick={handleMenuClick}
+                  onDetailsClick={(task) => setTaskDetails(task)}
+                />
+                <DroppableColumn
+                  columnKey="paused"
+                  title="Paused"
+                  Icon={ChangeHistoryRounded}
+                  tasks={columns.paused}
+                  onMenuClick={handleMenuClick}
+                  onDetailsClick={(task) => setTaskDetails(task)}
+                />
+                <DroppableColumn
+                  columnKey="done"
+                  title="Done"
+                  Icon={StarBorderRounded}
+                  tasks={columns.done}
+                  onMenuClick={handleMenuClick}
+                  onDetailsClick={(task) => setTaskDetails(task)}
+                />
+              </Grid>
 
-            <DragOverlay dropAnimation={null}>
-              {activeTask ? (
-                <Box
-                  sx={{
-                    transform: 'rotate(15deg)',
-                    transformOrigin: 'center center',
-                    boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
-                    borderRadius: '12px',
-                  }}
-                >
-                  <TaskCard
-                    item={activeTask}
-                  />
-                </Box>
-              ) : null}
-            </DragOverlay>
-          </DragDropProvider>
+              <DragOverlay dropAnimation={null}>
+                {activeTask ? (
+                  <Box
+                    sx={{
+                      transform: 'rotate(15deg)',
+                      transformOrigin: 'center center',
+                      boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+                      borderRadius: '12px',
+                    }}
+                  >
+                    <TaskCard
+                      item={activeTask}
+                    />
+                  </Box>
+                ) : null}
+              </DragOverlay>
+            </DragDropProvider>
+          )}
         </Grid>
       </Grid>
     </Fragment>

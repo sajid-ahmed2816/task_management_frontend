@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { Box, Button, Chip, CircularProgress, Grid, IconButton, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, TextField, Popover, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, Stack, Divider, } from '@mui/material';
+import { Box, Button, Chip, CircularProgress, Grid, IconButton, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, TextField, Popover, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, Stack, Divider, Tooltip, Skeleton, } from '@mui/material';
 import ProjectServices from '../../api/projects';
 import { DeleteOutlineRounded, EditOutlined, SearchRounded } from '@mui/icons-material';
 import ProjectDialog from '../../components/project_dialog';
@@ -8,11 +8,11 @@ import getChipColor from '../../utils/GetChipColor';
 import toastify from '../../components/toast';
 import useStore from '../../config/zustand';
 
-const tableHead = ["Name", "Project Owner", "Start Date", "Due Date", "Status", "Priority", "Actions"];
+const tableHead = ["Name", "Project Owner", "Start Date", "Due Date", "Status", "Priority", "Deleted", "Actions"];
 
 function Projects() {
   const [projectsCount, setProjectsCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
   const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
@@ -256,8 +256,12 @@ function Projects() {
           horizontal: "right",
         }}
       >
-        <Box sx={{ p: "24px 16px 20px", width: 320 }}>
+        <Box sx={{ p: 2, width: 320 }}>
           <Stack spacing={2}>
+            <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+              Filters
+            </Typography>
+
             <TextField
               size="small"
               label="Start Date"
@@ -399,10 +403,19 @@ function Projects() {
 
       <Grid container spacing={2}>
         <Grid size={12}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h1" sx={{ fontSize: 24, fontWeight: 600 }}>
-              Projects
-            </Typography>
+          <Stack
+            spacing={2}
+            direction={{ xs: "column", sm: "row" }}
+            sx={{ alignItems: { xs: "flex-start", sm: "center" }, justifyContent: 'space-between' }}
+          >
+            <Box>
+              <Typography variant="h1" sx={{ fontSize: 24, fontWeight: 600 }}>
+                Projects
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Manage your projects.
+              </Typography>
+            </Box>
             <Button
               variant="contained"
               sx={{
@@ -416,7 +429,7 @@ function Projects() {
             >
               +
             </Button>
-          </Box>
+          </Stack>
         </Grid>
 
         <Grid size={12}>
@@ -453,7 +466,8 @@ function Projects() {
                 fullWidth
                 onClick={handleFilterOpen}
                 sx={{
-                  height: "100%"
+                  height: "100%",
+                  fontSize: "16px"
                 }}
               >
                 Filter
@@ -465,11 +479,13 @@ function Projects() {
         <Grid size={12}>
           <TableContainer
             sx={{
-              height: "calc(100vh - 203px)",
+              height: "calc(100vh - 217px)",
               overflowY: "auto",
               "& .MuiTableCell-head": {
                 background: "#024F6E"
-              }
+              },
+              boxShadow: "0px 0px 5px 2px #e7e7e7",
+              borderRadius: 4
             }}
           >
             <Table size="small" stickyHeader>
@@ -490,13 +506,15 @@ function Projects() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} sx={{ textAlign: "center" }}>
-                      <CircularProgress />
-                    </TableCell>
+                {isLoading ? Array.from({ length: 10 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 8 }).map((_, j) => (
+                      <TableCell key={j}>
+                        <Skeleton variant='text' sx={{ fontSize: "20px" }} />
+                      </TableCell>
+                    ))}
                   </TableRow>
-                ) : projects.length > 0 ? (
+                )) : projects.length > 0 ? (
                   <Fragment>
                     {projects.map((item) => (
                       <TableRow key={item._id}>
@@ -516,9 +534,18 @@ function Projects() {
                                 background: item.color
                               }}
                             />
-                            <Typography>
-                              {item.name}
-                            </Typography>
+                            <Tooltip title={item.name} arrow placement="top">
+                              <Typography
+                                sx={{
+                                  whiteSpace: "nowrap",
+                                  textOverflow: "ellipsis",
+                                  width: "160px",
+                                  overflow: "hidden"
+                                }}
+                              >
+                                {item.name}
+                              </Typography>
+                            </Tooltip>
                           </Box>
                         </TableCell>
                         <TableCell>
@@ -545,6 +572,13 @@ function Projects() {
                           />
                         </TableCell>
                         <TableCell>
+                          <Chip
+                            color={item.isDeleted ? "error" : "success"}
+                            variant="outlined"
+                            label={item.isDeleted ? "Yes" : "No"}
+                          />
+                        </TableCell>
+                        <TableCell>
                           <Box
                             sx={{
                               display: "flex",
@@ -556,13 +590,17 @@ function Projects() {
                               color="info"
                               onClick={() => handleEditProject(item)}
                             >
-                              <EditOutlined />
+                              <Tooltip title={"Edit"} arrow placement='bottom'>
+                                <EditOutlined />
+                              </Tooltip>
                             </IconButton>
                             <IconButton
                               color="error"
                               onClick={() => handleDeleteProject(item)}
                             >
-                              <DeleteOutlineRounded />
+                              <Tooltip title={"Delete"} arrow placement='bottom'>
+                                <DeleteOutlineRounded />
+                              </Tooltip>
                             </IconButton>
                           </Box>
                         </TableCell>
@@ -571,7 +609,7 @@ function Projects() {
                   </Fragment>
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} sx={{ textAlign: "center" }}>
+                    <TableCell colSpan={8} sx={{ textAlign: "center" }}>
                       No data available
                     </TableCell>
                   </TableRow>
@@ -591,8 +629,8 @@ function Projects() {
           />
         </Grid>
       </Grid>
-    </Fragment>
+    </Fragment >
   );
-}
+};
 
-export default Projects
+export default Projects;

@@ -63,6 +63,18 @@ const theme = createTheme({
         }
       },
     },
+    MuiToggleButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: "12px",
+          textTransform: "capitalize",
+          border: "1px solid #024F6E",
+          whiteSpace: "nowrap",
+          fontSize: "14px",
+          padding: "5px 15px"
+        }
+      },
+    },
     MuiDivider: {
       styleOverrides: {
         "root": {

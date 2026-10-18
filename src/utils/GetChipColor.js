@@ -8,7 +8,10 @@ function getChipColor(key) {
     on_hold: "warning",
     completed: "success",
     cancelled: "error",
-    planning: "primary"
+    planning: "primary",
+    "in-progress": "success",
+    paused: "warning",
+    done: "info"
   };
 
   return chipColorMap[key];
