@@ -167,14 +167,18 @@ function TaskDialog({ open, onClose, onSubmit, loading = false, editTask = null,
                   error={!!errors.project}
                   helperText={errors.project?.message}
                 >
-                  {allProjects?.map((project) => (
+                  {allProjects?.length > 0 ? allProjects?.map((project) => (
                     <MenuItem
                       key={project?._id}
                       value={project?._id}
                     >
                       {project?.name}
                     </MenuItem>
-                  ))}
+                  )) : (
+                    <MenuItem value="" disabled>
+                      No project available
+                    </MenuItem>
+                  )}
                 </TextField>
               )}
             />

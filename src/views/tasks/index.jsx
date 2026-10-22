@@ -6,6 +6,7 @@ import TaskServices from "../../api/tasks"
 import TaskDialog from '../../components/task_dialog';
 import TaskDetailsDialog from '../../components/task_details_dialog';
 import toastify from '../../components/toast';
+import useStore from '../../config/zustand';
 
 function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick }) {
   const handleClick = (option) => {
@@ -420,6 +421,7 @@ export default function Tasks() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [deletingTask, setDeletingTask] = useState(false);
   const [taskDetails, setTaskDetails] = useState(null);
+  const { workspace } = useStore();
 
   const open = Boolean(anchorEl);
 
@@ -427,7 +429,7 @@ export default function Tasks() {
     try {
       setLoading(true);
       setError('');
-      const response = await TaskServices.getTasks();
+      const response = await TaskServices.getTasks(workspace._id);
       const tasks = response?.data || [];
       setColumns(mapTasksToColumns(tasks));
     } catch (error) {
@@ -523,7 +525,7 @@ export default function Tasks() {
     };
 
     try {
-      const promise = TaskServices.updateTask(activeId, {
+      const promise = TaskServices.updateTask(workspace?._id, activeId, {
         status: newStatus,
         project: projectId
       });
@@ -573,7 +575,7 @@ export default function Tasks() {
       try {
         setUpdatingTask(true);
 
-        const promise = await TaskServices.updateTask(editTask._id, formData);
+        const promise = await TaskServices.updateTask(workspace?._id, editTask._id, formData);
         const response = await toastify(promise);
         const updatedTask = response?.data;
 
@@ -622,7 +624,7 @@ export default function Tasks() {
     try {
       setCreatingTask(true);
 
-      const promise = TaskServices.createTask(formData);
+      const promise = TaskServices.createTask(workspace?._id, formData);
       const response = await toastify(promise);
 
       const createdTask = response?.data;
@@ -794,6 +796,7 @@ export default function Tasks() {
             };
           });
         }}
+        workspaceId={workspace?._id}
       />
 
       <Grid container spacing={2}>

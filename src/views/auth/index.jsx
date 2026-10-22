@@ -52,7 +52,6 @@ function OTPDialog({ open, handleClose, email, seconds }) {
 			if (result?.status) {
 				handleClose();
 				const obj = { ...result.data.user, token: result.data.token };
-				toastify(result);
 				userLogin(obj);
 				navigate("/dashboard");
 			}

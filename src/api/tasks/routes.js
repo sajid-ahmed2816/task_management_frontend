@@ -1,16 +1,16 @@
 const taskRoutes = {
-  getTasks: "/tasks/get",
-  getTaskById: (id) => `/tasks/${id}`,
-  createTask: "/tasks/add",
-  addSubTask: (id) => `/tasks/${id}/subtasks`,
-  updateTask: (id) => `/tasks/update/${id}`,
-  updateSubTask: (id, subTaskId) => `/tasks/${id}/subtasks/${subTaskId}`,
-  deleteTask: (id) => `/tasks/delete/${id}`,
-  deleteSubTask: (id, subTaskId) => `/tasks/${id}/subtasks/${subTaskId}`,
-  addComment: (id) => `/tasks/${id}/comments`,
-  addAttachment: (id) => `/tasks/${id}/attachments`,
-  deleteAttachment: (id, attachmentId) => `/tasks/${id}/attachments/${attachmentId}`,
-  downloadAttachment: (id, attachmentId) => `/tasks/${id}/attachments/${attachmentId}/download`,
+  getTasks: (workspaceId) => `/tasks/${workspaceId}/get`,
+  getTaskById: (workspaceId, id) => `/tasks/${workspaceId}/${id}`,
+  createTask: (workspaceId) => `/tasks/${workspaceId}/add`,
+  addSubTask: (workspaceId, id) => `/tasks/${workspaceId}/${id}/subtasks`,
+  updateTask: (workspaceId, id) => `/tasks/${workspaceId}/update/${id}`,
+  updateSubTask: (workspaceId, id, subTaskId) => `/tasks/${workspaceId}/${id}/subtasks/${subTaskId}`,
+  deleteTask: (workspaceId, id) => `/tasks/${workspaceId}/delete/${id}`,
+  deleteSubTask: (workspaceId, id, subTaskId) => `/tasks/${workspaceId}/${id}/subtasks/${subTaskId}`,
+  addComment: (workspaceId, id) => `/tasks/${workspaceId}/${id}/comments`,
+  addAttachment: (workspaceId, id) => `/tasks/${workspaceId}/${id}/attachments`,
+  deleteAttachment: (workspaceId, id, attachmentId) => `/tasks/${workspaceId}/${id}/attachments/${attachmentId}`,
+  downloadAttachment: (workspaceId, id, attachmentId) => `/tasks/${workspaceId}/${id}/attachments/${attachmentId}/download`,
 };
 
 export default taskRoutes;

@@ -8,7 +8,7 @@ import getChipColor from '../../utils/GetChipColor';
 import toastify from '../../components/toast';
 import useStore from '../../config/zustand';
 
-const tableHead = ["Name", "Project Owner", "Start Date", "Due Date", "Status", "Priority", "Deleted", "Actions"];
+const tableHead = ["Name", "Created By", "Start Date", "Due Date", "Status", "Priority", "Deleted", "Actions"];
 
 function Projects() {
   const [projectsCount, setProjectsCount] = useState(0);
@@ -41,6 +41,7 @@ function Projects() {
     setProjectsFilters,
     setProjectSearch: setSearch,
     resetProjectsFilters,
+    workspace
   } = useStore();
 
   const isFilterOpen = Boolean(filterAnchor);
@@ -77,7 +78,7 @@ function Projects() {
       }),
     }
     try {
-      const result = await ProjectServices.getProjects(params);
+      const result = await ProjectServices.getProjects(workspace?._id, params);
       if (result.status) {
         setProjects(result.data.projects);
         setProjectsCount(result.data.pagination.total)
@@ -94,7 +95,7 @@ function Projects() {
       try {
         setIsUpdatingProject(true);
 
-        const promise = ProjectServices.updateProject(editProject._id, formData);
+        const promise = ProjectServices.updateProject(workspace?._id, editProject._id, formData);
         const response = await toastify(promise);
         const updatedTask = response?.data;
 
@@ -120,7 +121,7 @@ function Projects() {
     try {
       setIsCreatingProject(true);
 
-      const promise = ProjectServices.createProject(formData);
+      const promise = ProjectServices.createProject(workspace._id, formData);
       const response = await toastify(promise);
       const createdProject = response?.data;
 
@@ -145,7 +146,7 @@ function Projects() {
   const deleteProject = async () => {
     setIsDeletingProject(true);
     try {
-      const promise = ProjectServices.deleteProject(selectedProject?._id);
+      const promise = ProjectServices.deleteProject(workspace?._id, selectedProject?._id);
       const result = await toastify(promise);
       if (result.status) {
         getProjects();
@@ -549,7 +550,7 @@ function Projects() {
                           </Box>
                         </TableCell>
                         <TableCell>
-                          {item?.user?.name}
+                          {item?.createdBy?.name}
                         </TableCell>
                         <TableCell>
                           {new Date(item.startDate).toLocaleDateString("en-GB")}

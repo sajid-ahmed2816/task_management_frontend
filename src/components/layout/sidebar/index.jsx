@@ -12,7 +12,7 @@ import useStore from '../../../config/zustand';
 const drawerWidth = 290;
 
 const openedMixin = (theme) => ({
-  background: "#024F6E",
+  background: "linear-gradient(135deg, #00bbe5, #024F6E)",
   width: drawerWidth,
   transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
@@ -24,7 +24,7 @@ const openedMixin = (theme) => ({
 });
 
 const closedMixin = (theme) => ({
-  background: "#024F6E",
+  background: "linear-gradient(135deg, #00bbe5, #024F6E)",
   transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,

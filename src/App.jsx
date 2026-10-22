@@ -10,16 +10,22 @@ import useStore from './config/zustand';
 import ProjectServices from './api/projects';
 import theme from './assets/theme';
 import './App.css';
+import WorkspaceServices from './api/workspaces';
 
 function App() {
   const { user } = useAuth();
   const { token } = user || {};
 
   const {
+    workspace,
     setAllProjects,
+    setWorkspaces,
     setAllProjectsLoading,
     setAllProjectsError,
-    projectsRefreshKey
+    setWorkspacesLoading,
+    setWorkspacesError,
+    projectsRefreshKey,
+    workspacesRefreshKey
   } = useStore();
 
   useEffect(() => {
@@ -32,13 +38,16 @@ function App() {
         setAllProjectsLoading(true);
         setAllProjectsError(null);
 
-        const result = await ProjectServices.getProjects({ page: 1, limit: "all" });
+        const result = await ProjectServices.getProjects(workspace?._id, { page: 1, limit: "all" });
 
         if (!isMounted) return;
 
         const projects = result?.data?.projects
 
-        setAllProjects(projects);
+        if (result.status) {
+          setAllProjects(projects);
+        };
+
       } catch (error) {
         if (!isMounted) return;
 
@@ -46,11 +55,36 @@ function App() {
       } finally {
         if (isMounted) {
           setAllProjectsLoading(false);
-        }
-      }
+        };
+      };
+    };
+
+    const getWorkspaces = async () => {
+      try {
+        setWorkspacesLoading(true);
+        setWorkspacesError(null);
+
+        const response = await WorkspaceServices.getWorkspaces();
+
+        if (!isMounted) return;
+
+        if (response.status) {
+          setWorkspaces(response.data.workspaces);
+        };
+
+      } catch (error) {
+        if (!isMounted) return;
+
+        setWorkspacesError(error?.message);
+      } finally {
+        if (isMounted) {
+          setWorkspacesLoading(false);
+        };
+      };
     };
 
     fetchProjects();
+    getWorkspaces();
 
     return () => {
       isMounted = false;
@@ -60,7 +94,8 @@ function App() {
     setAllProjects,
     setAllProjectsLoading,
     setAllProjectsError,
-    projectsRefreshKey
+    projectsRefreshKey,
+    workspacesRefreshKey
   ]);
 
   return (

@@ -41,6 +41,7 @@ const theme = createTheme({
       styleOverrides: {
         paper: {
           borderRadius: '8px',
+          background: 'linear-gradient(135deg, #00bbe5, #024F6E) !important',
         },
         "backdrop": {
           backdropFilter: "blur(2px)"
@@ -58,8 +59,11 @@ const theme = createTheme({
         root: {
           borderRadius: "12px",
           textTransform: "capitalize",
-          border: "1px solid #024F6E",
-          whiteSpace: "nowrap"
+          whiteSpace: "nowrap",
+        },
+        contained: {
+          background: 'linear-gradient(135deg, #00bbe5, #024F6E)',
+          color: '#FFFFFF',
         }
       },
     },
