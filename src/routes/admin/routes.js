@@ -4,7 +4,7 @@ import Chat from "../../views/chat";
 import Calendar from "../../views/calendar";
 import Tasks from "../../views/tasks";
 import Projects from "../../views/projects";
-import Setting from "../../views/setting";
+import Setting from "../../views/settings";
 
 const adminRoutes = [
   {
@@ -28,7 +28,7 @@ const adminRoutes = [
     component: createElement(Projects),
   },
   {
-    path: "/setting",
+    path: "/settings",
     component: createElement(Setting),
   },
 ];

@@ -1,5 +1,5 @@
 
-import React, { Fragment, useEffect, useMemo, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { Paper, Typography, Stack, Chip, Grid, Divider, Box, CircularProgress, Alert, Drawer, IconButton, } from "@mui/material";
 import { CloseRounded, CalendarMonthRounded, FolderRounded, TaskAltRounded, FlagRounded, AccessTimeRounded, } from "@mui/icons-material";
 import dayGridPlugin from "@fullcalendar/react/daygrid";
@@ -9,11 +9,11 @@ import EventCalendar from '@fullcalendar/mui/pulse/EventCalendar';
 import ProjectServices from "../../api/projects";
 import TaskServices from "../../api/tasks";
 import toastify from "../../components/toast";
+import getChipColor from "../../utils/GetChipColor";
+import useStore from "../../config/zustand";
 import '@fullcalendar/react/skeleton.css';
 import '@fullcalendar/mui/pulse/theme.css';
 import './calendar.css';
-import getChipColor from "../../utils/GetChipColor";
-import useStore from "../../config/zustand";
 
 const extractProjects = (response) => {
   if (Array.isArray(response)) return response;

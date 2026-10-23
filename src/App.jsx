@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes, Navigate, Outlet } from 'react-router-dom';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { Toaster } from 'react-hot-toast';
@@ -11,8 +11,13 @@ import ProjectServices from './api/projects';
 import theme from './assets/theme';
 import './App.css';
 import WorkspaceServices from './api/workspaces';
+import toastify from './components/toast';
+import WorkspaceDialog from './components/workspace_dialog';
 
 function App() {
+  const [isCreating, setIsCreating] = useState(false);
+  const [isWorkspaceDialogOpen, setIsWorkspaceDialogOpen] = useState(false);
+
   const { user } = useAuth();
   const { token } = user || {};
 
@@ -20,13 +25,33 @@ function App() {
     workspace,
     setAllProjects,
     setWorkspaces,
+    setWorkspace,
     setAllProjectsLoading,
     setAllProjectsError,
     setWorkspacesLoading,
     setWorkspacesError,
     projectsRefreshKey,
-    workspacesRefreshKey
+    workspacesRefreshKey,
+    refreshWorkspaces
   } = useStore();
+
+  const createWorkspace = async (formdata) => {
+    setIsCreating(true);
+    const obj = { name: formdata.workspace, description: formdata.description };
+    try {
+      const promise = WorkspaceServices.createWorkspace(obj);
+      const response = await toastify(promise);
+      if (response.status) {
+        setIsWorkspaceDialogOpen(false);
+        refreshWorkspaces();
+        setWorkspace(response.data);
+      };
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsCreating(false);
+    };
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -68,8 +93,11 @@ function App() {
 
         if (!isMounted) return;
 
-        if (response.status) {
-          setWorkspaces(response.data.workspaces);
+        if (response?.status) {
+          setWorkspaces(response?.data?.workspaces);
+          if (response?.data?.workspaces?.length === 0) {
+            setIsWorkspaceDialogOpen(true);
+          }
         };
 
       } catch (error) {
@@ -100,6 +128,12 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
+      <WorkspaceDialog
+        isOpen={isWorkspaceDialogOpen}
+        handleClose={() => setIsWorkspaceDialogOpen(false)}
+        onSubmit={createWorkspace}
+        isCreating={isCreating}
+      />
       <CssBaseline />
       <Toaster />
       <BrowserRouter>
