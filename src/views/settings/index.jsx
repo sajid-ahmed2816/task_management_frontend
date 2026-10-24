@@ -1,4 +1,5 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Box, Divider, Grid, Stack, Typography, Tabs, Tab, } from "@mui/material";
 import PropTypes from 'prop-types';
 import toastify from "../../components/toast";
@@ -11,6 +12,7 @@ import MembersPanel from "./member_panel";
 import useAuth from "../../hooks/useAuth";
 import InvitationDialog from "../../components/invitation_dialog";
 import MemberServices from "../../api/members";
+import IncomingInvitations from "./incoming_invitations";
 
 function CustomTabPanel(props) {
   const { children, value, tab, ...other } = props;
@@ -47,17 +49,20 @@ function a11yProps(tab) {
 };
 
 function Setting() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeId, setActiveId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [membersRefreshKey, setMembersRefreshKey] = useState(0);
   const [isWorkspaceDialogOpen, setIsWorkspaceDialogOpen] = useState(false);
   const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [tabValue, setTabValue] = useState("workspace");
   const [section, setSection] = useState("active");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const invitationToken = searchParams.get("inviteToken");
 
   const {
     workspace,
@@ -66,8 +71,6 @@ function Setting() {
     refreshWorkspaces
   } = useStore();
   const { user } = useAuth();
-
-  const workspaceName = workspace?.name || "Selected workspace";
 
   const activeWorkspace = workspaces.find((item) => item._id === activeId)
     || workspaces.find((item) => item._id === workspace?._id)
@@ -81,11 +84,13 @@ function Setting() {
   const hasActiveWorkspace = Boolean(activeWorkspace?._id);
 
   const settingTabs = hasActiveWorkspace ? [
-    ...(isWorkspaceOwner ? [{ key: "workspace", label: "Workspace" }] : []),
+    { key: "workspace", label: "Workspace" },
     { key: "members", label: "Members" },
+    { key: "invitations", label: "Invitations" },
     { key: "profile", label: "Profile" },
   ] : [
     { key: "workspace", label: "Workspace" },
+    { key: "invitations", label: "Invitations" },
     { key: "profile", label: "Profile" }
   ];
   const visibleTabValue = settingTabs.some((tab) => tab.key === tabValue) ? tabValue : settingTabs[0].key;
@@ -93,6 +98,32 @@ function Setting() {
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
+
+  useEffect(() => {
+    if (invitationToken || searchParams.get("tab") === "invitations") {
+      setTabValue("invitations");
+    }
+    if (invitationToken) {
+      sessionStorage.setItem("pendingWorkspaceInvitationToken", invitationToken);
+      const cleanParams = new URLSearchParams(searchParams);
+      cleanParams.delete("inviteToken");
+      setSearchParams(cleanParams, { replace: true });
+    }
+  }, [invitationToken, searchParams, setSearchParams]);
+
+  useEffect(() => {
+    setSection("active");
+  }, [activeWorkspace?._id]);
+
+  useEffect(() => {
+    if (activeId && (workspaces.some((item) => item._id === activeId) || workspace?._id === activeId)) return;
+    const current = workspaces.find((item) => item._id === workspace?._id) || workspaces[0];
+    setActiveId(current?._id || "");
+  }, [activeId, workspaces, workspace?._id]);
+
+  useEffect(() => {
+    if (!isWorkspaceOwner && section !== "active") setSection("active");
+  }, [isWorkspaceOwner, section]);
 
   const openCreate = () => {
     setIsWorkspaceDialogOpen(true);
@@ -106,6 +137,10 @@ function Setting() {
       const response = await toastify(promise);
       if (response.status) {
         setIsWorkspaceDialogOpen(false);
+        if (response?.data?._id) {
+          setWorkspace(response.data);
+          setActiveId(response.data._id);
+        }
         refreshWorkspaces();
       };
     } catch (error) {
@@ -160,10 +195,12 @@ function Setting() {
   const createInvitation = async (formdata) => {
     setIsSending(true);
     try {
-      const promise = MemberServices.createInvitation(workspace?._id, formdata);
+      const promise = MemberServices.createInvitation(activeWorkspace?._id, formdata);
       const result = await toastify(promise);
       if (result.status) {
         setIsInviteDialogOpen(false);
+        setSection("invitations");
+        setMembersRefreshKey((value) => value + 1);
       };
     } catch (error) {
       console.log("🚀 ~ createInvitation ~ error:", error)
@@ -184,7 +221,7 @@ function Setting() {
       <InvitationDialog
         isInviteDialogOpen={isInviteDialogOpen}
         setIsInviteDialogOpen={setIsInviteDialogOpen}
-        workspaceName={workspaceName}
+        workspaceName={activeWorkspace?.name || "Selected workspace"}
         onSubmit={createInvitation}
         isSending={isSending}
       />
@@ -248,11 +285,12 @@ function Setting() {
           </Box>
           <CustomTabPanel value={visibleTabValue} tab="workspace">
             <WorkspacePanel
-              workspace={workspace}
+              workspace={activeWorkspace}
               workspaces={workspaces}
               activeId={activeId}
               setActiveId={setActiveId}
               setWorkspace={setWorkspace}
+              userId={user?._id}
               openCreate={openCreate}
               saveWorkspace={saveWorkspace}
               removeWorkspace={removeWorkspace}
@@ -266,7 +304,11 @@ function Setting() {
               section={section}
               setSection={setSection}
               setIsInviteDialogOpen={setIsInviteDialogOpen}
+              refreshKey={membersRefreshKey}
             />
+          </CustomTabPanel>
+          <CustomTabPanel value={visibleTabValue} tab="invitations">
+            <IncomingInvitations />
           </CustomTabPanel>
           <CustomTabPanel value={visibleTabValue} tab="profile">
             Item Two

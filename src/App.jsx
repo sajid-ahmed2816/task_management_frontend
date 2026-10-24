@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Route, Routes, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { Toaster } from 'react-hot-toast';
 import publicRoutes from './routes/public/routes';
@@ -13,6 +13,16 @@ import './App.css';
 import WorkspaceServices from './api/workspaces';
 import toastify from './components/toast';
 import WorkspaceDialog from './components/workspace_dialog';
+import InvitationLanding from './views/invitation';
+
+const pendingInviteKey = "pendingWorkspaceInvitationToken";
+
+function ProtectedLayout({ token }) {
+  const location = useLocation();
+  if (token) return <Layout />;
+  const returnTo = `${location.pathname}${location.search}`;
+  return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
+}
 
 function App() {
   const [isCreating, setIsCreating] = useState(false);
@@ -94,9 +104,19 @@ function App() {
         if (!isMounted) return;
 
         if (response?.status) {
-          setWorkspaces(response?.data?.workspaces);
-          if (response?.data?.workspaces?.length === 0) {
-            setIsWorkspaceDialogOpen(true);
+          const availableWorkspaces = response?.data?.workspaces || [];
+          setWorkspaces(availableWorkspaces);
+          const currentWorkspaceIsAvailable = availableWorkspaces.some((item) => item._id === workspace?._id);
+          if (availableWorkspaces.length > 0 && !currentWorkspaceIsAvailable) {
+            setWorkspace(availableWorkspaces[0]);
+          }
+          if (availableWorkspaces.length === 0) {
+            setWorkspace({});
+            const params = new URLSearchParams(window.location.search);
+            const invitationIsPending = sessionStorage.getItem(pendingInviteKey)
+              || params.has("inviteToken")
+              || window.location.pathname === "/accept-invitation";
+            if (!invitationIsPending) setIsWorkspaceDialogOpen(true);
           }
         };
 
@@ -123,7 +143,8 @@ function App() {
     setAllProjectsLoading,
     setAllProjectsError,
     projectsRefreshKey,
-    workspacesRefreshKey
+    workspacesRefreshKey,
+    workspace?._id
   ]);
 
   return (
@@ -138,7 +159,8 @@ function App() {
       <Toaster />
       <BrowserRouter>
         <Routes>
-          <Route path={"/"} element={token ? <Layout /> : <Navigate to={"/login"} />}>
+          <Route path="/accept-invitation" element={<InvitationLanding />} />
+          <Route path={"/"} element={<ProtectedLayout token={token} />}>
             {adminRoutes.map((r, i) => (
               <Route key={i} path={r.path} element={r.component} />
             ))}

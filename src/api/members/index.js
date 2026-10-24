@@ -27,6 +27,11 @@ const MemberServices = {
     return result;
   },
 
+  previewInvitation: async (token) => {
+    const result = await get(MemberRoutes.previewInvitation(), { token });
+    return result;
+  },
+
   deleteMember: async (workspaceId, id) => {
     const result = await deleted(MemberRoutes.deleteMember(workspaceId, id));
     return result;

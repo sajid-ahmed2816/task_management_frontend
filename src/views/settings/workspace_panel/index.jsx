@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Avatar, Box, Button, Card, Chip, Divider, Grid, IconButton, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { AddCircle, CheckRounded, DeleteOutlineRounded, EditOutlined, Groups2Outlined, LayersOutlined, WorkspacePremiumOutlined } from "@mui/icons-material";
 import { Controller, useForm } from "react-hook-form";
@@ -13,19 +14,32 @@ function WorkspacePanel({
   activeId,
   setActiveId,
   setWorkspace,
+  userId,
   openCreate,
   saveWorkspace,
   removeWorkspace,
   isSaving
 }) {
 
+  const canManage = (item) => item?.role === "Owner"
+    || Boolean(item?.owner && userId && String(item.owner?._id || item.owner) === String(userId));
+  const selectedWorkspace = workspaces.find((item) => item._id === activeId) || workspace;
+  const canManageSelected = canManage(selectedWorkspace);
+
   const {
     control,
     handleSubmit,
     watch,
-    setValues,
+    reset,
     formState: { errors },
   } = useForm({ defaultValues });
+
+  useEffect(() => {
+    reset({
+      workspace: selectedWorkspace?.name || "",
+      description: selectedWorkspace?.description || ""
+    });
+  }, [selectedWorkspace?._id, selectedWorkspace?.name, selectedWorkspace?.description, reset]);
 
   return (
     <Grid container spacing={2}>
@@ -67,7 +81,7 @@ function WorkspacePanel({
                 width: 54,
                 height: 54,
                 borderRadius: 2.5,
-                bgcolor: workspace?.background || COLORS[0],
+                bgcolor: workspace?.background,
                 fontSize: 22,
                 fontWeight: 800,
                 boxShadow: "0 5px 12px #152c351a"
@@ -272,7 +286,7 @@ function WorkspacePanel({
                     fontSize: 14
                   }}
                 >
-                  Your workspaces
+                  Workspaces
                   <Typography
                     component="span"
                     sx={{
@@ -316,10 +330,6 @@ function WorkspacePanel({
                       onClick={() => {
                         setActiveId(item._id);
                         setWorkspace(item);
-                        setValues({
-                          workspace: item?.name,
-                          description: item?.description
-                        })
                       }}
                       sx={{
                         overflow: "visible",
@@ -387,7 +397,7 @@ function WorkspacePanel({
                             {item.description || "No description"}
                           </Typography>
                         </Box>
-                        {workspaces.length > 1 && (
+                        {workspaces.length > 1 && canManage(item) && (
                           <Tooltip title="Remove workspace">
                             <IconButton
                               size="small"
@@ -457,7 +467,11 @@ function WorkspacePanel({
                         variant="caption"
                         sx={{ color: "#87949c" }}
                       >
-                        Update the name and description for this space.
+                        {!selectedWorkspace?._id
+                          ? "Create a workspace to start organizing your work."
+                          : canManageSelected
+                            ? "Update the name and description for this space."
+                            : "You are a member of this workspace. Workspace details are managed by its owner."}
                       </Typography>
                     </Box>
                   </Stack>
@@ -475,6 +489,7 @@ function WorkspacePanel({
                         fullWidth
                         label="Workspace name"
                         placeholder="e.g. Product team"
+                        disabled={!selectedWorkspace?._id || !canManageSelected}
                         error={!!errors?.workspace}
                         helperText={errors?.workspace?.message}
                         size="small"
@@ -500,6 +515,7 @@ function WorkspacePanel({
                         minRows={2.3}
                         label="Description"
                         placeholder="A space for your team's work"
+                        disabled={!selectedWorkspace?._id || !canManageSelected}
                         inputProps={{ maxLength: 160, }}
                         helperText={`${watch("description")?.length || 0}/160`}
                         slotProps={{
@@ -511,17 +527,19 @@ function WorkspacePanel({
                     )}
                   />
                 </Grid>
-                <Grid size={12} sx={{ textAlign: "end" }}>
-                  <Button
-                    onClick={handleSubmit(saveWorkspace)}
-                    disabled={!watch("workspace")?.trim() || isSaving}
-                    variant="contained"
-                    startIcon={<CheckRounded />}
-                    sx={{ fontWeight: 700 }}
-                  >
-                    Save changes
-                  </Button>
-                </Grid>
+                {canManageSelected && (
+                  <Grid size={12} sx={{ textAlign: "end" }}>
+                    <Button
+                      onClick={handleSubmit(saveWorkspace)}
+                      disabled={!watch("workspace")?.trim() || isSaving}
+                      variant="contained"
+                      startIcon={<CheckRounded />}
+                      sx={{ fontWeight: 700 }}
+                    >
+                      Save changes
+                    </Button>
+                  </Grid>
+                )}
               </Grid>
             </Card>
           </Grid>

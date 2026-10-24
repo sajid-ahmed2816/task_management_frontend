@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, forwardRef, Fragment } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Box, Button, Grid, IconButton, TextField, Typography, DialogActions, DialogContent, DialogContentText, DialogTitle, Slide, CircularProgress } from '@mui/material';
 import { Close, Visibility, VisibilityOff } from '@mui/icons-material';
 import { OTPInput } from 'input-otp';
@@ -35,7 +35,7 @@ function Slot(props) {
 	);
 };
 
-function OTPDialog({ open, handleClose, email, seconds }) {
+function OTPDialog({ open, handleClose, email, seconds, redirectTo }) {
 	const [otp, setOtp] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [isLoading2, setIsLoading2] = useState(false);
@@ -53,7 +53,7 @@ function OTPDialog({ open, handleClose, email, seconds }) {
 				handleClose();
 				const obj = { ...result.data.user, token: result.data.token };
 				userLogin(obj);
-				navigate("/dashboard");
+				navigate(redirectTo, { replace: true });
 			}
 		} catch (error) {
 			console.log(error);
@@ -174,6 +174,15 @@ function Login() {
 	const signupCardRef = useRef(null);
 
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
+	const requestedReturnTo = searchParams.get("returnTo");
+	const hasPendingWorkspaceInvite = Boolean(sessionStorage.getItem("pendingWorkspaceInvitationToken"));
+	const redirectTo = hasPendingWorkspaceInvite
+		? "/settings?tab=invitations"
+		: requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
+			? requestedReturnTo
+			: "/dashboard";
+	const invitedEmail = searchParams.get("inviteEmail") || "";
 
 	const { userLogin } = useAuth();
 
@@ -255,7 +264,7 @@ function Login() {
 				} else {
 					const userObj = { ...result.data.user, token: result.data.token };
 					userLogin(userObj);
-					navigate("/dashboard");
+					navigate(redirectTo, { replace: true });
 				}
 			}
 		} catch (error) {
@@ -299,6 +308,7 @@ function Login() {
 				handleClose={handleOTPDialog}
 				email={email}
 				seconds={seconds}
+				redirectTo={redirectTo}
 			/>
 			<Box
 				sx={{
@@ -364,6 +374,7 @@ function Login() {
 									{...register1("email", {
 										required: "Please enter your email"
 									})}
+									defaultValue={invitedEmail}
 								/>
 							</Grid>
 							<Grid size={12}>
@@ -459,6 +470,7 @@ function Login() {
 									{...register2("email", {
 										required: "Please enter your email"
 									})}
+									defaultValue={invitedEmail}
 								/>
 							</Grid>
 							<Grid size={12}>

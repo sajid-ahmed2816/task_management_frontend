@@ -442,7 +442,7 @@ export default function Tasks() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [workspace?._id]);
 
   const getTaskById = (id) => {
     for (const colKey of Object.keys(columns)) {

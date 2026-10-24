@@ -270,7 +270,7 @@ function Calendar() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [workspace?._id]);
 
   const handleEventClick = (info) => {
     const { event } = info;

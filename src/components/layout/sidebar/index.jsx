@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { Box, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemText, ListItemIcon, Avatar, Collapse } from '@mui/material'
+import { Box, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemText, ListItemIcon, Avatar, FormControl, MenuItem, Select, Tooltip } from '@mui/material'
 import MuiDrawer from '@mui/material/Drawer';
 import { ChevronLeft, ChevronRight, LogoutOutlined, SchemaOutlined } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
@@ -32,7 +31,7 @@ const closedMixin = (theme) => ({
   overflowX: 'hidden',
   width: `calc(${theme.spacing(8)} + 1px)`,
   [theme.breakpoints.up('sm')]: {
-    width: `calc(${theme.spacing(9)} + 1px)`,
+    width: `calc(${theme.spacing(9.5)} + 1px)`,
   },
   color: theme.palette.primary.main,
   borderRight: `1px solid  ${theme.palette.primary.main}`
@@ -76,7 +75,17 @@ function Sidebar() {
 
   const { user, userLogout } = useAuth();
   const { name, email } = user || {};
-  const { isDrawerOpen: open, toggleDrawer } = useStore();
+  const {
+    isDrawerOpen: open,
+    toggleDrawer,
+    workspaces,
+    workspace,
+    setWorkspace,
+    refreshAllProjects
+  } = useStore();
+  const selectedWorkspaceId = workspaces.some((item) => item._id === workspace?._id)
+    ? workspace._id
+    : workspaces[0]?._id || "";
 
   const handleDrawer = () => {
     toggleDrawer();
@@ -84,6 +93,13 @@ function Sidebar() {
 
   const hanldeNavigate = (path) => {
     navigate(path);
+  };
+
+  const handleWorkspaceChange = (event) => {
+    const nextWorkspace = workspaces.find((item) => item._id === event.target.value);
+    if (!nextWorkspace) return;
+    setWorkspace(nextWorkspace);
+    refreshAllProjects();
   };
 
   const handleLogout = () => {
@@ -124,13 +140,138 @@ function Sidebar() {
             </IconButton>
           </DrawerHeader>
           <Divider />
+          {workspaces.length > 0 && (
+            <Box sx={{ px: open ? 1 : 0, py: 1.25, display: "flex", justifyContent: "center" }}>
+              <Tooltip title={open ? "Switch workspace" : workspace?.name || "Switch workspace"} placement="right">
+                <FormControl size="small" sx={{ width: open ? "100%" : 54 }}>
+                  <Select
+                    value={selectedWorkspaceId}
+                    onChange={handleWorkspaceChange}
+                    displayEmpty
+                    inputProps={{ "aria-label": "Switch workspace" }}
+                    renderValue={(id) => {
+                      const current = workspaces.find((item) => item._id === id);
+                      return open ? (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            minWidth: 0,
+                            gap: 1.2
+                          }}
+                        >
+                          <Avatar
+                            variant="rounded"
+                            sx={{
+                              width: 30,
+                              height: 30,
+                              flexShrink: 0,
+                              bgcolor: current?.background || "#ffffff33",
+                              color: "#fff",
+                              fontSize: 13,
+                              fontWeight: 800,
+                              borderRadius: 1.5
+                            }}
+                          >
+                            {current?.name?.slice(0, 1)?.toUpperCase() || "W"}
+                          </Avatar>
+                          <Box sx={{ minWidth: 0, textAlign: "left" }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                display: "block",
+                                color: "#cdeaf1",
+                                lineHeight: 1.1
+                              }}
+                            >
+                              WORKSPACE
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              noWrap sx={{
+                                color: "#fff",
+                                fontWeight: 700,
+                                lineHeight: 1.3
+                              }}
+                            >
+                              {current?.name || "Select workspace"}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      ) : (
+                        <Avatar
+                          variant="rounded"
+                          sx={{
+                            width: open ? 30 : 24,
+                            height: open ? 30 : 24,
+                            bgcolor: current?.background || "#ffffff33",
+                            color: "#fff",
+                            fontSize: 13,
+                            fontWeight: 800,
+                            borderRadius: 1.5
+                          }}
+                        >
+                          {current?.name?.slice(0, 1)?.toUpperCase() || "W"}
+                        </Avatar>
+                      );
+                    }}
+                    sx={{
+                      color: "#fff",
+                      borderRadius: 2,
+                      minHeight: 46,
+                      "& .MuiSelect-select": {
+                        display: "flex",
+                        alignItems: "center",
+                        py: 0.7,
+                        px: open ? 1 : 1.3
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ffffff55"
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ffffffaa"
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#fff"
+                      },
+                      "& .MuiSelect-icon": {
+                        color: "#fff",
+                        display: open ? "block" : "none"
+                      }
+                    }}
+                  >
+                    {workspaces.map((item) => (
+                      <MenuItem key={item._id} value={item._id}>
+                        <Avatar
+                          variant="rounded"
+                          sx={{
+                            width: 30,
+                            height: 30,
+                            mr: 1.2,
+                            bgcolor: item.background || "#e5f4f1",
+                            color: "#168d86",
+                            fontSize: 13,
+                            fontWeight: 800,
+                            borderRadius: 1.5
+                          }}
+                        >
+                          {item.name?.slice(0, 1)?.toUpperCase() || "W"}
+                        </Avatar>
+                        <ListItemText primary={item.name} secondary={item.role || "Workspace"} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Tooltip>
+            </Box>
+          )}
           <Box
             sx={{
               width: "100%",
               display: "flex",
               flexDirection: "column",
               alignItems: open ? "flex-start" : "center",
-              height: "calc(100vh - 121px)",
+              height: "calc(100vh - 187px)",
               overflowY: "auto",
               overflowX: "hidden"
             }}

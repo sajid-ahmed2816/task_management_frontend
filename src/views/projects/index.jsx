@@ -211,7 +211,7 @@ function Projects() {
 
   useEffect(() => {
     getProjects();
-  }, [page, rowsPerPage, filters, debouncedSearch]);
+  }, [page, rowsPerPage, filters, debouncedSearch, workspace?._id]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
