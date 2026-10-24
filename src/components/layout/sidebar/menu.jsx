@@ -14,9 +14,9 @@ const menu = [
     path: "/dashboard"
   },
   {
-    label: "Chat",
+    label: "Chats",
     icon: <ModeCommentOutlined />,
-    path: "/chat"
+    path: "/chats"
   },
   {
     label: "Calendar",
