@@ -12,7 +12,7 @@ const adminRoutes = [
     component: createElement(Home)
   },
   {
-    path: "/chat",
+    path: "/chats",
     component: createElement(Chat)
   },
   {
