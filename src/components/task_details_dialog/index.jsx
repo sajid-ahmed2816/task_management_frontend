@@ -4,9 +4,11 @@ import { Avatar, Box, Button, Checkbox, Chip, CircularProgress, DialogActions, D
 import { Adjust, AttachFileOutlined, ChangeHistoryRounded, CircleOutlined, PictureAsPdfRounded, ImageRounded, DescriptionRounded, TableChartRounded, SlideshowRounded, CodeRounded, ArchiveRounded, InsertDriveFileRounded, Description, Event, PriorityHigh, SendRounded, StarBorderRounded, Close, DeleteOutlineOutlined, WorkHistoryOutlined } from "@mui/icons-material";
 import TaskServices from "../../api/tasks";
 import Dialog from "../dialog";
+import toastify from "../toast";
 
 export default function TaskDetailsDialog({
   open,
+  workspaceId,
   task,
   onClose,
   onTaskUpdated,
@@ -40,7 +42,7 @@ export default function TaskDetailsDialog({
         setLoading(true);
         setError("");
 
-        const response = await TaskServices.getTaskById(task._id);
+        const response = await TaskServices.getTaskById(workspaceId, task._id);
         const taskDetails = response?.data;
 
         if (!taskDetails) {
@@ -81,7 +83,7 @@ export default function TaskDetailsDialog({
       setCommentLoading(true);
       setError("");
 
-      const response = await TaskServices.addComment(details._id, {
+      const response = await TaskServices.addComment(workspaceId, details._id, {
         text,
       });
 
@@ -126,6 +128,7 @@ export default function TaskDetailsDialog({
       setError("");
 
       const response = await TaskServices.addAttachment(
+        workspaceId,
         details._id,
         formData
       );
@@ -165,7 +168,7 @@ export default function TaskDetailsDialog({
       setDeletingId(attachmentId);
       setError("");
 
-      const response = await TaskServices.deleteAttachment(details._id, attachmentId);
+      const response = await TaskServices.deleteAttachment(workspaceId, details._id, attachmentId);
       const attachments = response?.data;
 
       if (!Array.isArray(attachments)) {
@@ -249,10 +252,12 @@ export default function TaskDetailsDialog({
     let blobUrl;
 
     try {
-      const response = await TaskServices.downloadAttachment(
+      const promise = TaskServices.downloadAttachment(
+        workspaceId,
         details._id,
         attachment._id
       );
+      const response = await toastify(promise);
 
       const blob =
         response instanceof Blob
@@ -290,7 +295,7 @@ export default function TaskDetailsDialog({
       setSubTaskLoading(true);
       setError("");
 
-      const response = await TaskServices.addSubTask(details._id, {
+      const response = await TaskServices.addSubTask(workspaceId, details._id, {
         title,
       });
 
@@ -319,6 +324,7 @@ export default function TaskDetailsDialog({
       setError("");
 
       const response = await TaskServices.updateSubTask(
+        workspaceId,
         details._id,
         subTask._id,
         { isCompleted }
@@ -348,6 +354,7 @@ export default function TaskDetailsDialog({
       setError("");
 
       const response = await TaskServices.deleteSubTask(
+        workspaceId,
         details._id,
         subTaskId
       );

@@ -1,9 +1,9 @@
 const ProjectRoutes = {
-  getProjects: "/projects/get",
-  getProjectById: (id) => `/projects/${id}`,
-  createProject: "/projects/add",
-  updateProject: (id) => `/projects/update/${id}`,
-  deleteProject: (id) => `/projects/delete/${id}`,
+  getProjects: (workspaceId) => `/projects/${workspaceId}/get`,
+  getProjectById: (workspaceId, id) => `/projects/${workspaceId}/${id}`,
+  createProject: (workspaceId) => `/projects/${workspaceId}/add`,
+  updateProject: (workspaceId, id) => `/projects/${workspaceId}/update/${id}`,
+  deleteProject: (workspaceId, id) => `/projects/${workspaceId}/delete/${id}`,
 };
 
 export default ProjectRoutes

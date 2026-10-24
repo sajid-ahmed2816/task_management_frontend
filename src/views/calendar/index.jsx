@@ -1,5 +1,5 @@
 
-import React, { Fragment, useEffect, useMemo, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { Paper, Typography, Stack, Chip, Grid, Divider, Box, CircularProgress, Alert, Drawer, IconButton, } from "@mui/material";
 import { CloseRounded, CalendarMonthRounded, FolderRounded, TaskAltRounded, FlagRounded, AccessTimeRounded, } from "@mui/icons-material";
 import dayGridPlugin from "@fullcalendar/react/daygrid";
@@ -9,10 +9,11 @@ import EventCalendar from '@fullcalendar/mui/pulse/EventCalendar';
 import ProjectServices from "../../api/projects";
 import TaskServices from "../../api/tasks";
 import toastify from "../../components/toast";
+import getChipColor from "../../utils/GetChipColor";
+import useStore from "../../config/zustand";
 import '@fullcalendar/react/skeleton.css';
 import '@fullcalendar/mui/pulse/theme.css';
 import './calendar.css';
-import getChipColor from "../../utils/GetChipColor";
 
 const extractProjects = (response) => {
   if (Array.isArray(response)) return response;
@@ -126,6 +127,7 @@ function Calendar() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { workspace } = useStore();
 
   const isDrawerOpen = Boolean(selectedEvent);
 
@@ -139,8 +141,8 @@ function Calendar() {
       try {
         // Projects aur tasks ko independently fetch karna
         const results = await Promise.allSettled([
-          ProjectServices.getProjects({ limit: "all" }),
-          TaskServices.getTasks(),
+          ProjectServices.getProjects(workspace?._id, { limit: "all" }),
+          TaskServices.getTasks(workspace?._id),
         ]);
 
         if (!isMounted) return;
@@ -268,7 +270,7 @@ function Calendar() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [workspace?._id]);
 
   const handleEventClick = (info) => {
     const { event } = info;
@@ -293,7 +295,7 @@ function Calendar() {
 
   const getDetailsById = async (id, type) => {
     try {
-      const promise = type === "project" ? ProjectServices.getProjectById(id) : TaskServices.getTaskById(id);
+      const promise = type === "project" ? ProjectServices.getProjectById(workspace?._id, id) : TaskServices.getTaskById(workspace?._id, id);
       const result = await toastify(promise);
 
       if (!result?.status || !result?.data) return;
@@ -845,50 +847,51 @@ function Calendar() {
         </Grid>
 
         <Grid size={12}>
-          {error && (
+          {error ? (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
+          ) : (
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 1, sm: 2 },
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: "24px",
+                minWidth: 0,
+                height: "calc(100vh - 132px)"
+              }}
+            >
+              {loading ? (
+                <Box
+                  sx={{
+                    height: "100%",
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    py: 2,
+                  }}
+                >
+                  <CircularProgress size={26} />
+                </Box>
+              ) : (
+                <EventCalendar
+                  height={512}
+                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                  availableViews={['dayGridMonth', 'dayGridWeek', 'listWeek']}
+                  editable
+                  selectable
+                  nowIndicator
+                  navLinks
+                  events={events}
+                  eventClick={handleEventClick}
+                  eventContent={renderEventContent}
+                />
+              )}
+            </Paper>
           )}
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 1, sm: 2 },
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: "24px",
-              minWidth: 0,
-              height: "calc(100vh - 132px)"
-            }}
-          >
-            {loading ? (
-              <Box
-                sx={{
-                  height: "100%",
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  py: 2,
-                }}
-              >
-                <CircularProgress size={26} />
-              </Box>
-            ) : (
-              <EventCalendar
-                height={512}
-                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                availableViews={['dayGridMonth', 'dayGridWeek', 'listWeek']}
-                editable
-                selectable
-                nowIndicator
-                navLinks
-                events={events}
-                eventClick={handleEventClick}
-                eventContent={renderEventContent}
-              />
-            )}
-          </Paper>
         </Grid>
       </Grid>
     </Fragment>

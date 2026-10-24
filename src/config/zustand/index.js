@@ -17,8 +17,12 @@ const useStore = create(persist((set) => ({
 
   //Refresh trigger
   projectsRefreshKey: 0,
+  workspacesRefreshKey: 0,
   refreshAllProjects: () => set((state) => ({
     projectsRefreshKey: state.projectsRefreshKey + 1,
+  })),
+  refreshWorkspaces: () => set((state) => ({
+    workspacesRefreshKey: state.workspacesRefreshKey + 1,
   })),
 
   // All projects for TaskDialog
@@ -66,6 +70,16 @@ const useStore = create(persist((set) => ({
   isDrawerOpen: true,
   setIsDrawerOpen: (value) => set({ isDrawerOpen: value }),
   toggleDrawer: () => set((state) => ({ isDrawerOpen: !state.isDrawerOpen })),
+
+  workspace: {},
+  workspaces: [],
+  workspacesLoading: false,
+  workspacesError: null,
+
+  setWorkspace: (workspace) => set(() => ({ workspace })),
+  setWorkspaces: (workspaces) => set(() => ({ workspaces })),
+  setWorkspacesLoading: (workspacesLoading) => set({ workspacesLoading }),
+  setWorkspacesError: (workspacesError) => set({ workspacesError }),
 
 }), {
   name: "app-storage",

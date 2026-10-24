@@ -36,7 +36,7 @@ const menu = [
   {
     label: "Setting",
     icon: <SettingsOutlined />,
-    path: "/setting"
+    path: "/settings"
   }
 ];
 
