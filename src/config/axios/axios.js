@@ -1,9 +1,10 @@
 import axios from "axios";
 
-const baseUrl = "http://localhost:5174/api";
+export const apiBaseUrl =
+  import.meta.env.VITE_API_URL || "http://localhost:5174/api";
 
 const instance = axios.create({
-  baseURL: baseUrl
+  baseURL: apiBaseUrl,
 });
 
 instance.interceptors.request.use((request) => {
@@ -16,10 +17,13 @@ instance.interceptors.request.use((request) => {
   return request;
 });
 
-instance.interceptors.response.use((response) => {
-  return response;
-}, (error) => {
-  return Promise.reject(error)
-});
+instance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 
 export default instance;
