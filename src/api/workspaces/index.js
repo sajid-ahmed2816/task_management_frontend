@@ -7,6 +7,11 @@ const WorkspaceServices = {
     return result;
   },
 
+  getDashboard: async (workspaceId) => {
+    const result = await get(WorkspaceRoutes.getDashboard(workspaceId));
+    return result;
+  },
+
   createWorkspace: async (data) => {
     const result = await post(WorkspaceRoutes.createWorkspace, data);
     return result;

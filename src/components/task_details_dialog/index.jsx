@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Avatar, Box, Button, Checkbox, Chip, CircularProgress, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText, TextField, Typography } from "@mui/material";
-import { Adjust, AttachFileOutlined, ChangeHistoryRounded, CircleOutlined, PictureAsPdfRounded, ImageRounded, DescriptionRounded, TableChartRounded, SlideshowRounded, CodeRounded, ArchiveRounded, InsertDriveFileRounded, Description, Event, PriorityHigh, SendRounded, StarBorderRounded, Close, DeleteOutlineOutlined, WorkHistoryOutlined } from "@mui/icons-material";
+import { Adjust, AttachFileOutlined, ChangeHistoryRounded, CircleOutlined, PictureAsPdfRounded, ImageRounded, DescriptionRounded, TableChartRounded, SlideshowRounded, CodeRounded, ArchiveRounded, InsertDriveFileRounded, Description, Event, PriorityHigh, SendRounded, StarBorderRounded, Close, DeleteOutlineOutlined, WorkHistoryOutlined, Groups, TaskAltRounded } from "@mui/icons-material";
 import TaskServices from "../../api/tasks";
 import Dialog from "../dialog";
 import toastify from "../toast";
@@ -433,153 +433,263 @@ export default function TaskDetailsDialog({
 
               <Box
                 sx={{
-                  height: "32px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1
+                  border: "1px solid #E8EDF0",
+                  borderRadius: 4,
+                  p: 2
                 }}
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1
-                  }}
-                >
-                  <Adjust sx={{ fill: "#8A8A8A", fontSize: "18px" }} />
-                  <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Status</Typography>
-                </Box>
-                <Chip
-                  sx={{
-                    textTransform: "capitalize",
-                    background: "#024F6E",
-                    color: "#FFFFFF",
-                    "&.MuiChip-root": {
-                      "& .MuiChip-icon": {
-                        ml: 1,
-                        color: "#FFFFFF"
-                      }
-                    }
-                  }}
-                  icon={details.status === "in-progress"
-                    ? <CircleOutlined sx={{ fontSize: "16px" }} /> : details.status === "paused"
-                      ? <ChangeHistoryRounded sx={{ fontSize: "16px" }} />
-                      : <StarBorderRounded sx={{ fontSize: "16px" }} />
-                  }
-                  variant="filled"
-                  label={details.status}
-                />
-              </Box>
+                <Grid container spacing={2}>
+                  <Grid size={6}>
+                    <Grid container spacing={1}>
+                      <Grid size={12}>
+                        <Box
+                          sx={{
+                            height: "32px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
+                            }}
+                          >
+                            <Adjust sx={{ fill: "#8A8A8A", fontSize: "18px" }} />
+                            <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Status</Typography>
+                          </Box>
+                          <Chip
+                            sx={{
+                              textTransform: "capitalize",
+                              background: "#024F6E",
+                              color: "#FFFFFF",
+                              "&.MuiChip-root": {
+                                "& .MuiChip-icon": {
+                                  ml: 1,
+                                  color: "#FFFFFF"
+                                }
+                              }
+                            }}
+                            icon={details.status === "in-progress"
+                              ? <CircleOutlined sx={{ fontSize: "16px" }} /> : details.status === "paused"
+                                ? <ChangeHistoryRounded sx={{ fontSize: "16px" }} />
+                                : <StarBorderRounded sx={{ fontSize: "16px" }} />
+                            }
+                            variant="filled"
+                            label={details.status}
+                          />
+                        </Box>
+                      </Grid>
+                      <Grid size={12}>
+                        <Divider sx={{ borderColor: "#E8EDF0" }} />
+                      </Grid>
+                      <Grid size={12}>
+                        <Box
+                          sx={{
+                            height: "32px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
+                            }}
+                          >
+                            <PriorityHigh sx={{ fill: "#8A8A8A", fontSize: "18px" }} />
+                            <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Priority</Typography>
+                          </Box>
+                          <Chip
+                            color={details.priority === "high"
+                              ? "error" : details?.priority === "medium"
+                                ? "warning" : "success"
+                            }
+                            variant="outlined"
+                            label={details.priority}
+                            sx={{
+                              px: 1.2,
+                              textTransform: "capitalize"
+                            }}
+                          />
+                        </Box>
+                      </Grid>
+                      <Grid size={12}>
+                        <Divider sx={{ borderColor: "#E8EDF0" }} />
+                      </Grid>
+                      <Grid size={12}>
+                        <Box sx={{
+                          height: "32px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1
+                        }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
+                            }}
+                          >
+                            <Groups sx={{ fill: "#8A8A8A", fontSize: "18px" }} />
+                            <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Assignees</Typography>
+                          </Box>
+                          {details.assignees?.length ? (
+                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                              {details.assignees.map((assignee, index) => (
+                                <Chip
+                                  key={assignee?._id || index}
+                                  avatar={<Avatar src={assignee?.profile_picture}>{assignee?.name?.[0]?.toUpperCase()}</Avatar>}
+                                  label={assignee?.name || assignee?.email || "Workspace member"}
+                                  variant="outlined"
+                                  size="small"
+                                />
+                              ))}
+                            </Box>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary" sx={{ pt: 0.75 }}>
+                              Unassigned
+                            </Typography>
+                          )}
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </Grid>
 
-              <Box
-                sx={{
-                  height: "32px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1
-                  }}
-                >
-                  <PriorityHigh sx={{ fill: "#8A8A8A", fontSize: "18px" }} />
-                  <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Priority</Typography>
-                </Box>
-                <Chip
-                  color={details.priority === "high"
-                    ? "error" : details?.priority === "medium"
-                      ? "warning" : "success"
-                  }
-                  variant="outlined"
-                  label={details.priority}
-                  sx={{
-                    px: 1.2,
-                    textTransform: "capitalize"
-                  }}
-                />
-              </Box>
+                  <Grid size={6}>
+                    <Grid container spacing={1}>
+                      {details.status === "done" && details.completedBy && (
+                        <Fragment>
+                          <Grid size={12}>
+                            <Box
+                              sx={{
+                                height: "32px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1
+                                }}
+                              >
+                                <TaskAltRounded sx={{ fill: "#8A8A8A", fontSize: "18px" }} />
+                                <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Completed by</Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="text.secondary">
+                                  {details.completedBy.name || details.completedBy.email || "Workspace member"}
+                                  {details.completedAt && ` · ${new Date(details.completedAt).toLocaleString()}`}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Grid>
+                          <Grid size={12}>
+                            <Divider sx={{ borderColor: "#E8EDF0" }} />
+                          </Grid>
+                        </Fragment>
+                      )}
+                      <Grid size={12}>
+                        <Box
+                          sx={{
+                            height: "32px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
+                            }}
+                          >
+                            <Event sx={{ fill: "#8A8A8A", fontSize: "17px" }} />
+                            <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Due date</Typography>
+                          </Box>
+                          <Typography variant="body2">
+                            {details.dueDate
+                              ? new Date(details.dueDate).toLocaleDateString()
+                              : "Not set"}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid size={12}>
+                        <Divider sx={{ borderColor: "#E8EDF0" }} />
+                      </Grid>
+                      <Grid size={12}>
+                        <Box
+                          sx={{
+                            height: "32px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1
+                            }}
+                          >
+                            <WorkHistoryOutlined sx={{ fill: "#8A8A8A", fontSize: "17px" }} />
+                            <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Project</Typography>
+                          </Box>
+                          <Typography variant="body2">{details.project?.name || "Uncategorized"}</Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </Grid>
 
-              <Box
-                sx={{
-                  height: "32px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1
-                  }}
-                >
-                  <Event sx={{ fill: "#8A8A8A", fontSize: "17px" }} />
-                  <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Due date</Typography>
-                </Box>
-                <Typography variant="body2">
-                  {details.dueDate
-                    ? new Date(details.dueDate).toLocaleDateString()
-                    : "Not set"}
-                </Typography>
-              </Box>
+                  <Grid size={12}>
+                    <Divider sx={{ borderColor: "#E8EDF0" }} />
+                  </Grid>
 
-              <Box
-                sx={{
-                  height: "32px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1
-                  }}
-                >
-                  <WorkHistoryOutlined sx={{ fill: "#8A8A8A", fontSize: "17px" }} />
-                  <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Project</Typography>
-                </Box>
-                <Typography variant="body2">{details.project?.name || "Uncategorized"}</Typography>
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  flexDirection: "column",
-                  gap: 1
-                }}
-              >
-                <Box
-                  sx={{
-                    height: "32px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1
-                  }}
-                >
-                  <Description sx={{ fill: "#8A8A8A", fontSize: "17px" }} />
-                  <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Description</Typography>
-                </Box>
-                <Box
-                  sx={{
-                    width: "100%",
-                    p: 2,
-                    border: "1px solid #D1D1D1",
-                    borderRadius: "8px"
-                  }}
-                >
-                  <Typography variant="body2">
-                    {details.description || "No description provided."}
-                  </Typography>
-                </Box>
+                  <Grid size={12}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        flexDirection: "column",
+                        gap: 1
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          height: "32px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1
+                        }}
+                      >
+                        <Description sx={{ fill: "#8A8A8A", fontSize: "17px" }} />
+                        <Typography variant="body2" sx={{ color: "#8A8A8A" }}>Description</Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          width: "100%",
+                          p: 2,
+                          border: "1px solid #D1D1D1",
+                          borderRadius: 4
+                        }}
+                      >
+                        <Typography variant="body2">
+                          {details.description || "No description provided."}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
               </Box>
             </Box>
 
