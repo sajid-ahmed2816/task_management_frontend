@@ -1,14 +1,17 @@
 import React, { Fragment, useState, useEffect } from 'react';
-import { Box, Button, Grid, Typography, LinearProgress, AvatarGroup, Avatar, IconButton, Menu, MenuItem, ListItemIcon, Divider, ListItemText, CircularProgress, Stack, Skeleton } from '@mui/material';
-import { CircleOutlined, ChangeHistoryRounded, StarBorderRounded, MessageOutlined, AttachFileOutlined, MoreHorizOutlined, DeleteOutlineRounded, AccountCircleOutlined, BorderColorOutlined, AssignmentIndOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { Alert, Avatar, AvatarGroup, Box, Button, Checkbox, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, InputAdornment, LinearProgress, ListItemIcon, ListItemText, Menu, MenuItem, Skeleton, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { AccountCircleOutlined, AssignmentIndOutlined, BorderColorOutlined, ChangeHistoryRounded, CircleOutlined, DeleteOutlineRounded, AttachFileOutlined, MessageOutlined, MoreHorizOutlined, SearchRounded, StarBorderRounded, VisibilityOutlined } from '@mui/icons-material';
 import { DragDropProvider, useDraggable, useDroppable, DragOverlay } from '@dnd-kit/react';
 import TaskServices from "../../api/tasks"
 import TaskDialog from '../../components/task_dialog';
 import TaskDetailsDialog from '../../components/task_details_dialog';
 import toastify from '../../components/toast';
 import useStore from '../../config/zustand';
+import useAuth from '../../hooks/useAuth';
+import MemberServices from '../../api/members';
+import { toast } from 'react-hot-toast';
 
-function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick }) {
+function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick, onAssign, onAssignToMe }) {
   const handleClick = (option) => {
     onClick({ status: option, project: task.project });
     handleClose();
@@ -37,7 +40,6 @@ function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick
       open={open}
       anchorEl={anchorEl}
       onClose={handleClose}
-      onClick={handleClose}
       sx={{
         "& .MuiList-root": {
           display: "flex",
@@ -93,7 +95,16 @@ function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick
         </MenuItem>
       ))}
       <Divider sx={{ borderColor: "#024F6E" }} />
-      <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
+      <MenuItem
+        onClick={() => {
+          handleClose();
+          onAssign?.(task);
+        }}
+        sx={{
+          gap: 2,
+          py: "3px !important"
+        }}
+      >
         <ListItemIcon sx={{
           "&.MuiListItemIcon-root": {
             background: "#D4D4D4",
@@ -116,7 +127,16 @@ function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick
           primary={"Assign to ..."}
         />
       </MenuItem>
-      <MenuItem onClick={handleClose} sx={{ gap: 2, py: "3px !important" }}>
+      <MenuItem
+        onClick={() => {
+          handleClose();
+          onAssignToMe?.(task);
+        }}
+        sx={{
+          gap: 2,
+          py: "3px !important"
+        }}
+      >
         <ListItemIcon sx={{
           "&.MuiListItemIcon-root": {
             background: "#D4D4D4",
@@ -214,6 +234,11 @@ function TaskCard({ item, onMenuClick, onDetailsClick }) {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.2 }}>
           <Typography variant="body1" fontWeight={600}>{item.title}</Typography>
           <Typography variant="body2" color="primary.main">{item.category}</Typography>
+          {item.status === "done" && item.completedBy && (
+            <Typography variant="caption" color="text.secondary">
+              Completed by {item.completedBy.name || item.completedBy.email || "Workspace member"}
+            </Typography>
+          )}
         </Box>
         <Box
           sx={{
@@ -262,12 +287,13 @@ function TaskCard({ item, onMenuClick, onDetailsClick }) {
           slotProps={{ surplus: { sx: { width: 24, height: 24, fontSize: 12 } } }}
         >
           {(item.assignees || []).slice(0, 2).map((assignee, ind) => (
-            <Avatar
-              key={assignee._id || ind}
-              alt={assignee.name}
-              src={assignee.profile_picture}
-              sx={{ width: 24, height: 24 }}
-            />
+            <Tooltip key={assignee._id || ind} title={assignee.name || assignee.email || "Workspace member"}>
+              <Avatar
+                alt={assignee.name}
+                src={assignee.profile_picture}
+                sx={{ width: 24, height: 24 }}
+              />
+            </Tooltip>
           ))}
         </AvatarGroup>
       </Box>
@@ -421,6 +447,14 @@ export default function Tasks() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [deletingTask, setDeletingTask] = useState(false);
   const [taskDetails, setTaskDetails] = useState(null);
+  const [assigningTask, setAssigningTask] = useState(null);
+  const [members, setMembers] = useState([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [selectedAssigneeIds, setSelectedAssigneeIds] = useState([]);
+  const [assignmentSaving, setAssignmentSaving] = useState(false);
+  const [assignmentError, setAssignmentError] = useState("");
+  const { user } = useAuth();
   const { workspace } = useStore();
 
   const open = Boolean(anchorEl);
@@ -706,7 +740,7 @@ export default function Tasks() {
   const handleClick = async (status) => {
     if (!selectedTask?._id) return;
     try {
-      const promise = TaskServices.updateTask(selectedTask._id, status);
+      const promise = TaskServices.updateTask(workspace?._id, selectedTask._id, status);
       const response = await toastify(promise);
       const updatedTask = response?.data;
 
@@ -747,6 +781,54 @@ export default function Tasks() {
     };
   };
 
+  const openAssigneePicker = async (task) => {
+    if (!workspace?._id || !task?._id) return;
+    setAssigningTask(task);
+    setMemberSearch("");
+    setAssignmentError("");
+    setSelectedAssigneeIds((task.assignees || []).map((member) => String(member?._id || member)));
+    setMembersLoading(true);
+    try {
+      const response = await MemberServices.getMembers(workspace._id);
+      const records = Array.isArray(response?.data) ? response.data : [];
+      setMembers(records.map((record) => record.user || record).filter((member) => member?._id));
+    } catch (requestError) {
+      setAssignmentError(requestError?.message || "Could not load workspace members.");
+    } finally {
+      setMembersLoading(false);
+    }
+  };
+
+  const saveAssignees = async (assigneeIds = selectedAssigneeIds, taskOverride = null) => {
+    const targetTask = taskOverride || assigningTask;
+    if (!targetTask?._id || !workspace?._id) return;
+    try {
+      setAssignmentSaving(true);
+      setAssignmentError("");
+      const response = await toastify(TaskServices.updateTask(workspace._id, targetTask._id, {
+        project: targetTask.project?._id || targetTask.project,
+        assignees: assigneeIds,
+      }));
+      const updatedTask = response?.data;
+      if (!updatedTask) throw new Error("Task assignment was not updated");
+      setColumns((prev) => Object.fromEntries(Object.entries(prev).map(([key, items]) => [
+        key,
+        items.map((item) => item._id === updatedTask._id ? mergeUpdatedTask(item, updatedTask) : item),
+      ])));
+      setTaskDetails((prev) => prev?._id === updatedTask._id ? { ...prev, ...updatedTask } : prev);
+      setAssigningTask(null);
+    } catch (requestError) {
+      if (taskOverride) toast.error(requestError?.message || "Could not assign this task.");
+      else setAssignmentError(requestError?.message || "Could not save task assignment.");
+    } finally {
+      setAssignmentSaving(false);
+    }
+  };
+
+  const filteredMembers = members.filter((member) =>
+    `${member.name || ""} ${member.email || ""}`.toLowerCase().includes(memberSearch.trim().toLowerCase())
+  );
+
   if (error) {
     return (
       <Typography color="error">
@@ -775,7 +857,127 @@ export default function Tasks() {
         onDelete={handleDeleteTask}
         onEdit={handleEditTask}
         onClick={(o) => handleClick(o)}
+        onAssign={openAssigneePicker}
+        onAssignToMe={(task) => {
+          if (user?._id) {
+            saveAssignees([String(user._id)], task);
+          }
+        }}
       />
+      <Dialog
+        open={Boolean(assigningTask)}
+        onClose={() => !assignmentSaving && setAssigningTask(null)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Assign task</DialogTitle>
+        <DialogContent>
+          {assignmentError && (
+            <Alert severity="error" sx={{ mt: 1 }}>{assignmentError}</Alert>
+          )}
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Search workspace members"
+            value={memberSearch}
+            onChange={(event) => setMemberSearch(event.target.value)}
+            sx={{ mt: 1, mb: 1.5 }}
+            slotProps={{
+              input: {
+                startAdornment: <InputAdornment position="start">
+                  <SearchRounded fontSize="small" />
+                </InputAdornment>
+              }
+            }}
+          />
+          {membersLoading ? (
+            <Box
+              sx={{
+                py: 4,
+                display: "flex",
+                justifyContent: "center"
+              }}
+            >
+              <CircularProgress size={24} />
+            </Box>
+          ) : (
+            <Box sx={{ maxHeight: 340, overflowY: "auto" }}>
+              {filteredMembers.map((member) => {
+                const memberId = String(member._id);
+                const checked = selectedAssigneeIds.includes(memberId);
+                return (
+                  <Box
+                    key={memberId}
+                    onClick={() => setSelectedAssigneeIds((prev) => checked ?
+                      prev.filter((id) => id !== memberId) :
+                      [...prev, memberId]
+                    )}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      py: 0.75,
+                      px: 0.5,
+                      borderRadius: 1,
+                      "&:hover": {
+                        bgcolor: "action.hover"
+                      }
+                    }}
+                  >
+                    <Checkbox checked={checked} tabIndex={-1} />
+                    <Avatar
+                      src={member.profile_picture}
+                      alt={member.name}
+                      sx={{ width: 34, height: 34, mr: 1.25 }}>
+                      {member.name?.[0]}
+                    </Avatar>
+                    <Box
+                      sx={{ minWidth: 0 }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}>
+                        {member.name || "Workspace member"}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                      >
+                        {member.email}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )
+              })}
+              {!filteredMembers.length && (
+                <Typography
+                  color="text.secondary"
+                  variant="body2"
+                  sx={{ py: 3, textAlign: "center" }}>
+                  No active workspace members found.
+                </Typography>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setAssigningTask(null)}
+            disabled={assignmentSaving}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => saveAssignees()}
+            disabled={assignmentSaving || membersLoading}
+          >
+            {assignmentSaving ?
+              <CircularProgress size={18} color="inherit" /> :
+              "Save assignment"
+            }
+          </Button>
+        </DialogActions>
+      </Dialog>
       <TaskDetailsDialog
         open={Boolean(taskDetails)}
         task={taskDetails}
