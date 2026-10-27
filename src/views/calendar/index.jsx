@@ -856,11 +856,11 @@ function Calendar() {
               elevation={0}
               sx={{
                 p: { xs: 1, sm: 2 },
-                border: "1px solid",
-                borderColor: "divider",
+                border: "1px solid #E8EDF0",
                 borderRadius: "24px",
                 minWidth: 0,
-                height: "calc(100vh - 132px)"
+                height: "calc(100vh - 132px)",
+                boxShadow: "0px 0px 15px 5px #EEEEEE80",
               }}
             >
               {loading ? (

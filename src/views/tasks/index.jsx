@@ -350,10 +350,10 @@ function DroppableColumn({ columnKey, title, Icon, tasks, onMenuClick, onDetails
             overflowY: 'auto',
             padding: 1,
             transition: 'border 0.2s',
-            boxShadow: "0px 0px 5px 3px #40404020",
+            boxShadow: "0px 0px 15px 5px #EEEEEE80",
             border: droppable.isDropTarget
               ? '1px dashed #006086'
-              : '1px solid transparent',
+              : '1px solid #E8EDF0',
           }}
         >
           {tasks.length > 0 ? (

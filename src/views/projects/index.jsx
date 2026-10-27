@@ -485,8 +485,9 @@ function Projects() {
               "& .MuiTableCell-head": {
                 background: "#024F6E"
               },
-              boxShadow: "0px 0px 5px 2px #e7e7e7",
-              borderRadius: 4
+              boxShadow: "0px 0px 15px 5px #EEEEEE80",
+              borderRadius: 4,
+              border: "1px solid #e8edf0"
             }}
           >
             <Table size="small" stickyHeader>

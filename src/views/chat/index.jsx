@@ -648,11 +648,12 @@ function Chat() {
             minHeight: { xs: 680, md: 550 },
             maxHeight: { xs: "none", md: 900 },
             border: paneBorder,
-            borderRadius: 3,
+            borderRadius: 4,
             overflow: "hidden",
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             bgcolor: "#fff",
+            boxShadow: "0px 0px 15px 5px #EEEEEE80",
           }}
         >
           {" "}
