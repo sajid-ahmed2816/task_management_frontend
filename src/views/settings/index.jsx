@@ -13,6 +13,7 @@ import useAuth from "../../hooks/useAuth";
 import InvitationDialog from "../../components/invitation_dialog";
 import MemberServices from "../../api/members";
 import IncomingInvitations from "./incoming_invitations";
+import ProfilePanel from "./profile_panel";
 
 function CustomTabPanel(props) {
   const { children, value, tab, ...other } = props;
@@ -70,7 +71,7 @@ function Setting() {
     setWorkspace,
     refreshWorkspaces
   } = useStore();
-  const { user } = useAuth();
+  const { user, userLogin } = useAuth();
 
   const activeWorkspace = workspaces.find((item) => item._id === activeId)
     || workspaces.find((item) => item._id === workspace?._id)
@@ -311,7 +312,7 @@ function Setting() {
             <IncomingInvitations />
           </CustomTabPanel>
           <CustomTabPanel value={visibleTabValue} tab="profile">
-            Item Two
+            <ProfilePanel user={user} userLogin={userLogin} />
           </CustomTabPanel>
         </Grid>
       </Grid >

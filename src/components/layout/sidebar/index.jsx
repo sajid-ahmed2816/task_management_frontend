@@ -74,14 +74,14 @@ function Sidebar() {
   const navigate = useNavigate();
 
   const { user, userLogout } = useAuth();
-  const { name, email } = user || {};
+  const { name, email, profile_picture } = user || {};
   const {
     isDrawerOpen: open,
     toggleDrawer,
     workspaces,
     workspace,
     setWorkspace,
-    refreshAllProjects
+    refreshAllProjects,
   } = useStore();
   const selectedWorkspaceId = workspaces.some((item) => item._id === workspace?._id)
     ? workspace._id
@@ -386,7 +386,10 @@ function Sidebar() {
                     gap: 1
                   }}
                 >
-                  <Avatar sx={{ width: "38px", height: "38px" }} />
+                  <Avatar
+                    src={profile_picture}
+                    sx={{ width: "38px", height: "38px" }}
+                  />
                   <Box
                     sx={{
                       display: "flex",
@@ -405,7 +408,7 @@ function Sidebar() {
                 </IconButton>
               </Box>
             ) : (
-              <Avatar sx={{ width: "38px", height: "38px" }} />
+              <Avatar src={profile_picture} sx={{ width: "38px", height: "38px" }} />
             )}
           </Box>
         </Box>
