@@ -5,6 +5,7 @@ import Calendar from "../../views/calendar";
 import Tasks from "../../views/tasks";
 import Projects from "../../views/projects";
 import Setting from "../../views/settings";
+import Notifications from "../../views/notifications";
 
 const adminRoutes = [
   {
@@ -30,6 +31,10 @@ const adminRoutes = [
   {
     path: "/settings",
     component: createElement(Setting),
+  },
+  {
+    path: "/notifications",
+    component: createElement(Notifications),
   },
 ];
 

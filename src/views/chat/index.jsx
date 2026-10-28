@@ -32,7 +32,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useStore from "../../config/zustand";
 import ChatServices from "../../api/chats";
@@ -216,6 +216,8 @@ function Chat() {
   const { workspace } = useStore();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedConversationId = searchParams.get("conversationId");
   const workspaceId = workspace?._id;
   const currentUserId = getId(user);
   const token =
@@ -265,7 +267,7 @@ function Chat() {
         const threads = conversationsResult?.data?.conversations || [];
         setUsers(activeUsers);
         setConversations(threads);
-        setSelectedConversation(threads[0] || null);
+        setSelectedConversation(threads.find((thread) => getId(thread) === requestedConversationId) || threads[0] || null);
       })
       .catch((requestError) => {
         if (active)
@@ -277,7 +279,7 @@ function Chat() {
     return () => {
       active = false;
     };
-  }, [workspaceId]);
+  }, [workspaceId, requestedConversationId]);
   useEffect(() => {
     let active = true;
     if (!workspaceId || !conversationId) {

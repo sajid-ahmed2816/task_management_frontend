@@ -10,6 +10,7 @@ import useStore from '../../config/zustand';
 import useAuth from '../../hooks/useAuth';
 import MemberServices from '../../api/members';
 import { toast } from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 
 function TaskMenu({ anchorEl, open, handleClose, task, onEdit, onDelete, onClick, onAssign, onAssignToMe }) {
   const handleClick = (option) => {
@@ -456,6 +457,7 @@ export default function Tasks() {
   const [assignmentError, setAssignmentError] = useState("");
   const { user } = useAuth();
   const { workspace } = useStore();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const open = Boolean(anchorEl);
 
@@ -466,6 +468,14 @@ export default function Tasks() {
       const response = await TaskServices.getTasks(workspace._id);
       const tasks = response?.data || [];
       setColumns(mapTasksToColumns(tasks));
+      const requestedTaskId = searchParams.get("taskId");
+      if (requestedTaskId) {
+        const requestedTask = tasks.find((task) => String(task._id) === requestedTaskId);
+        if (requestedTask) setTaskDetails(requestedTask);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.delete("taskId");
+        setSearchParams(nextParams, { replace: true });
+      }
     } catch (error) {
       console.error("FETCH TASKS ERROR:", error);
       setError(error?.message || "Failed to load tasks");

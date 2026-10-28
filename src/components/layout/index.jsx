@@ -1,11 +1,11 @@
-import { Fragment } from "react";
 import Sidebar from "./sidebar";
 import { Box } from "@mui/material";
 import { Outlet } from "react-router-dom";
+import { NotificationProvider } from "../../context/NotificationProvider";
 
 function Layout() {
   return (
-    <Fragment>
+    <NotificationProvider>
       <Box
         sx={{
           display: 'flex',
@@ -17,7 +17,7 @@ function Layout() {
           <Outlet />
         </Box>
       </Box>
-    </Fragment>
+    </NotificationProvider>
   );
 };
 
