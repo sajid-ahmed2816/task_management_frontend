@@ -422,10 +422,6 @@ export default function Home() {
         <Divider sx={{ borderColor: "#024F6E" }} />
       </Grid>
 
-      {error && <Alert severity="error" action={<Button color="inherit" size="small" onClick={loadDashboard}>Retry</Button>} sx={{ mb: 2 }}>{error}</Alert>}
-      {!workspaceId && !loading && <Alert severity="info" sx={{ mb: 2 }}>Select or create a workspace to see its dashboard.</Alert>}
-
-
       <Grid size={12}>
         <Box
           sx={{
@@ -434,6 +430,31 @@ export default function Home() {
             pr: 2,
           }}
         >
+          {error && (
+            <Alert
+              severity="error"
+              action={
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={loadDashboard}
+                >
+                  Retry
+                </Button>
+              }
+              sx={{ mb: 2 }}
+            >
+              {error}
+            </Alert>
+          )}
+          {!workspaceId && !loading && (
+            <Alert
+              severity="info"
+              sx={{ mb: 2 }}
+            >
+              Select or create a workspace to see its dashboard.
+            </Alert>
+          )}
           <Grid container spacing={2}>
             <Grid size={12}>
               <Grid container spacing={2}>
