@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import { Box, Divider, Grid, Stack, Typography, Tabs, Tab, } from "@mui/material";
 import PropTypes from 'prop-types';
 import toastify from "../../components/toast";
@@ -14,6 +14,7 @@ import InvitationDialog from "../../components/invitation_dialog";
 import MemberServices from "../../api/members";
 import IncomingInvitations from "./incoming_invitations";
 import ProfilePanel from "./profile_panel";
+import { AccountCircleOutlined, GroupsOutlined, MailOutlined, WorkspacesOutlined } from "@mui/icons-material";
 
 function CustomTabPanel(props) {
   const { children, value, tab, ...other } = props;
@@ -73,6 +74,8 @@ function Setting() {
   } = useStore();
   const { user, userLogin } = useAuth();
 
+  const { state } = useLocation();
+
   const activeWorkspace = workspaces.find((item) => item._id === activeId)
     || workspaces.find((item) => item._id === workspace?._id)
     || workspace;
@@ -99,6 +102,12 @@ function Setting() {
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
+
+  useEffect(() => {
+    if (state) {
+      setTabValue(state)
+    }
+  }, [state]);
 
   useEffect(() => {
     if (invitationToken || searchParams.get("tab") === "invitations") {
@@ -129,6 +138,16 @@ function Setting() {
   const openCreate = () => {
     setIsWorkspaceDialogOpen(true);
   };
+
+  const getIcon = (value) => {
+    const obj = {
+      workspace: <WorkspacesOutlined />,
+      members: <GroupsOutlined />,
+      invitations: <MailOutlined />,
+      profile: <AccountCircleOutlined />,
+    }
+    return obj[value];
+  }
 
   const createWorkspace = async (formdata) => {
     setIsCreating(true);
@@ -277,9 +296,14 @@ function Setting() {
                 <Tab
                   key={tab.key}
                   value={tab.key}
-                  sx={{ textTransform: "capitalize" }}
+                  icon={getIcon(tab.key)}
+                  iconPosition="start"
                   label={tab.label}
                   {...a11yProps(tab.key)}
+                  sx={{
+                    textTransform: "capitalize",
+                    minHeight: "0"
+                  }}
                 />
               ))}
             </Tabs>

@@ -47,7 +47,7 @@ function WorkspacePanel({
         <Card
           elevation={0}
           sx={{
-            p: 2,
+            p: "12.5px",
             border: "1px solid #e7edf0",
             borderRadius: 3,
             background: "linear-gradient(115deg, #f2faf9 0%, #ffffff 72%)",
@@ -132,7 +132,7 @@ function WorkspacePanel({
               </Typography>
             </Box>
           </Stack>
-          <Divider sx={{ my: 2, borderColor: "#e6efed" }} />
+          <Divider sx={{ my: "13px", borderColor: "#e6efed" }} />
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2.5}

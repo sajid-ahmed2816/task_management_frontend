@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import {
@@ -429,7 +429,7 @@ export default function Home() {
       <Grid size={12}>
         <Box
           sx={{
-            height: "calc(100vh - 137px)",
+            height: "calc(100vh - 134px)",
             overflowY: "auto",
             pr: 2,
           }}
@@ -438,14 +438,59 @@ export default function Home() {
             <Grid size={12}>
               <Grid container spacing={2}>
                 {loading ? Array.from({ length: 4 }).map((_, index) => (
-                  <Grid key={index} size={{ xs: 12, sm: 6, xl: 3 }}><Skeleton variant="rounded" height={125} sx={{ borderRadius: 3 }} /></Grid>
+                  <Grid
+                    key={index}
+                    size={{ xs: 12, sm: 6, xl: 3 }}
+                  >
+                    <Skeleton
+                      variant="rounded"
+                      height={125}
+                      sx={{ borderRadius: 3 }}
+                    />
+                  </Grid>
                 )) : (
-                  <>
-                    <Grid size={{ xs: 12, sm: 6, xl: 3 }}><MetricCard label="In progress" value={tasks.byStatus?.["in-progress"]} helper={`${tasks.total || 0} tasks across this workspace`} Icon={AccessTimeRounded} tint="#1686a0" onClick={viewTask} /></Grid>
-                    <Grid size={{ xs: 12, sm: 6, xl: 3 }}><MetricCard label="Completed tasks" value={tasks.byStatus?.done} helper="Tasks marked as done" Icon={AssignmentTurnedInRounded} tint="#28966b" onClick={viewTask} /></Grid>
-                    <Grid size={{ xs: 12, sm: 6, xl: 3 }}><MetricCard label="Overdue" value={tasks.overdue} helper="Open tasks past their due date" Icon={ErrorOutlineRounded} tint="#d45445" onClick={viewTask} /></Grid>
-                    <Grid size={{ xs: 12, sm: 6, xl: 3 }}><MetricCard label="Active projects" value={projects.active} helper={`${projects.total || 0} total projects`} Icon={FolderOpenRounded} tint="#7553b5" onClick={() => navigate("/projects")} /></Grid>
-                  </>
+                  <Fragment>
+                    <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
+                      <MetricCard
+                        label="In progress"
+                        value={tasks.byStatus?.["in-progress"]}
+                        helper={`${tasks.total || 0} tasks across this workspace`}
+                        Icon={AccessTimeRounded}
+                        tint="#1686a0"
+                        onClick={viewTask}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
+                      <MetricCard
+                        label="Completed tasks"
+                        value={tasks.byStatus?.done}
+                        helper="Tasks marked as done"
+                        Icon={AssignmentTurnedInRounded}
+                        tint="#28966b"
+                        onClick={viewTask}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
+                      <MetricCard
+                        label="Overdue"
+                        value={tasks.overdue}
+                        helper="Open tasks past their due date"
+                        Icon={ErrorOutlineRounded}
+                        tint="#d45445"
+                        onClick={viewTask}
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, xl: 3 }}>
+                      <MetricCard
+                        label="Active projects"
+                        value={projects.active}
+                        helper={`${projects.total || 0} total projects`}
+                        Icon={FolderOpenRounded}
+                        tint="#7553b5"
+                        onClick={() => navigate("/projects")}
+                      />
+                    </Grid>
+                  </Fragment>
                 )}
               </Grid>
             </Grid>
@@ -453,7 +498,15 @@ export default function Home() {
             <Grid size={12}>
               <Grid container spacing={2.5}>
                 <Grid size={{ xs: 12, lg: 7 }}>
-                  <Card elevation={0} sx={{ p: { xs: 2, sm: 2.5 }, height: "100%", border: "1px solid #e8edf0", borderRadius: 3 }}>
+                  <Card
+                    elevation={0}
+                    sx={{
+                      p: { xs: 2, sm: 2.5 },
+                      height: "100%",
+                      border: "1px solid #e8edf0",
+                      borderRadius: 3
+                    }}
+                  >
                     <SectionHeader
                       title="My tasks"
                       caption="Your next items across this workspace"
@@ -593,7 +646,13 @@ export default function Home() {
                       </Stack>
                     ) : upcomingTasks.length ? (
                       <Stack divider={<Divider flexItem />}>
-                        {upcomingTasks.slice(0, 5).map((task) => <TaskRow key={task._id} task={task} onClick={viewTask} />)}
+                        {upcomingTasks.slice(0, 5).map((task) => (
+                          <TaskRow
+                            key={task._id}
+                            task={task}
+                            onClick={viewTask}
+                          />
+                        ))}
                       </Stack>
                     ) : (
                       <EmptyState

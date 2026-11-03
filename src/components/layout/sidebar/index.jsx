@@ -1,13 +1,14 @@
-import { Box, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemText, ListItemIcon, Avatar, Badge, FormControl, MenuItem, Select, Tooltip } from '@mui/material'
-import MuiDrawer from '@mui/material/Drawer';
-import { ChevronLeft, ChevronRight, LogoutOutlined, NotificationsNoneRounded, SchemaOutlined } from '@mui/icons-material';
+import { Fragment, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Box, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemText, ListItemIcon, Avatar, Badge, FormControl, MenuItem, Select, Tooltip, Popover, Button } from '@mui/material'
+import { ChevronLeft, ChevronRight, LogoutOutlined, MoreHoriz, NotificationsNoneRounded, SchemaOutlined, SettingsOutlined } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import toast from 'react-hot-toast';
+import { useNotifications } from '../../../context/NotificationContext';
+import useStore from '../../../config/zustand';
+import MuiDrawer from '@mui/material/Drawer';
 import useAuth from '../../../hooks/useAuth';
 import menu from './menu';
-import { useLocation, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import useStore from '../../../config/zustand';
-import { useNotifications } from '../../../context/NotificationContext';
 
 const drawerWidth = 290;
 
@@ -32,7 +33,7 @@ const closedMixin = (theme) => ({
   overflowX: 'hidden',
   width: `calc(${theme.spacing(8)} + 1px)`,
   [theme.breakpoints.up('sm')]: {
-    width: `calc(${theme.spacing(9.5)} + 1px)`,
+    width: `calc(${theme.spacing(9.75)} + 1px)`,
   },
   color: theme.palette.primary.main,
   borderRight: `1px solid  ${theme.palette.primary.main}`
@@ -72,9 +73,14 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 function Sidebar() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [topMenuOpen, setTopMenuOpen] = useState(null);
+  const [bottomMenuOpen, setBottomMenuOpen] = useState(null);
 
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+
+  const isTopMenuOpen = Boolean(topMenuOpen);
+  const isBottomMenuOpen = Boolean(bottomMenuOpen);
   const { user, userLogout } = useAuth();
   const { unreadCount } = useNotifications();
   const { name, email, profile_picture } = user || {};
@@ -90,12 +96,28 @@ function Sidebar() {
     ? workspace._id
     : workspaces[0]?._id || "";
 
+  const handleTopMenuOpen = (event) => {
+    setTopMenuOpen(event.currentTarget);
+  };
+
+  const handleTopMenuClose = () => {
+    setTopMenuOpen(null);
+  };
+
+  const handleBottomMenuOpen = (event) => {
+    setBottomMenuOpen(event.currentTarget);
+  };
+
+  const handleBottomMenuClose = () => {
+    setBottomMenuOpen(null);
+  };
+
   const handleDrawer = () => {
     toggleDrawer();
   };
 
-  const hanldeNavigate = (path) => {
-    navigate(path);
+  const handleNavigate = (path, state) => {
+    navigate(path, (state ? { state: state } : {}));
   };
 
   const handleWorkspaceChange = (event) => {
@@ -112,134 +134,285 @@ function Sidebar() {
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <Drawer
-        variant="permanent"
-        open={open}
+    <Fragment>
+      <Popover
+        id={"topMenu"}
+        open={isTopMenuOpen}
+        anchorEl={topMenuOpen}
+        onClose={handleTopMenuClose}
+        anchorOrigin={{
+          vertical: 'center',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
       >
         <Box
           sx={{
-            padding: "0px 16px",
-            height: "100%"
+            p: 1.5,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1
           }}
         >
-          <DrawerHeader
-            sx={{
-              minHeight: "0 !important",
-              flexDirection: "column",
-              gap: 2,
-              display: "flex",
-              width: "100%",
-              p: "16px 0"
+          <Button
+            startIcon={<ChevronRight />}
+            onClick={() => {
+              handleDrawer();
+              handleTopMenuClose();
             }}
           >
-            <Box
+            Expand Menu
+          </Button>
+          <Button
+            startIcon={<NotificationsNoneRounded />}
+            onClick={() => {
+              handleNavigate("/notifications");
+              handleTopMenuClose();
+            }}
+          >
+            Notifications
+          </Button>
+        </Box>
+      </Popover>
+
+      <Popover
+        id={"bottomMenu"}
+        open={isBottomMenuOpen}
+        anchorEl={bottomMenuOpen}
+        onClose={handleBottomMenuClose}
+        anchorOrigin={{
+          vertical: 'center',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        <Box
+          sx={{
+            p: 1.5,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1
+          }}
+        >
+          <Button
+            startIcon={<SettingsOutlined />}
+            sx={{ justifyContent: "flex-start" }}
+            onClick={() => {
+              handleNavigate("/settings", "profile");
+              handleBottomMenuClose();
+            }}
+          >
+            Profile
+          </Button>
+          <Button
+            startIcon={<LogoutOutlined />}
+            sx={{ justifyContent: "flex-start" }}
+            onClick={() => {
+              handleLogout()
+              handleBottomMenuClose();
+            }}
+          >
+            Logout
+          </Button>
+        </Box>
+      </Popover>
+      <Box sx={{ display: 'flex' }}>
+        <Drawer
+          variant="permanent"
+          open={open}
+        >
+          <Box
+            sx={{
+              padding: "0px 16px",
+              height: "100%"
+            }}
+          >
+            <DrawerHeader
               sx={{
-                width: "100%",
-                flex: 1,
+                minHeight: "0 !important",
+                flexDirection: "column",
+                gap: 2,
                 display: "flex",
-                justifyContent: "space-between"
+                width: "100%",
+                p: "16px 0"
               }}
             >
-              <Typography
-                variant="h6"
-                noWrap
-                component="div"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                }}
-              >
-                <SchemaOutlined />
-                <Box component={"span"} sx={{ fontWeight: 700 }}>
-                  Flow
-                </Box>
-              </Typography>
               <Box
                 sx={{
+                  width: "100%",
+                  flex: 1,
                   display: "flex",
-                  gap: 0.5
+                  justifyContent: open ? "space-between" : "center"
                 }}
               >
-                <IconButton
-                  size={"small"}
-                  onClick={handleDrawer}
+                {open && (
+                  <Typography
+                    variant="h6"
+                    noWrap
+                    component="div"
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
+                  >
+                    <SchemaOutlined />
+                    <Box component={"span"} sx={{ fontWeight: 700 }}>
+                      Flow
+                    </Box>
+                  </Typography>
+                )}
+                <Box
                   sx={{
-                    flexShrink: 0,
-                    color: "#fff",
-                    "&:hover": {
-                      bgcolor: "#ffffff2b"
-                    },
+                    display: "flex",
+                    gap: 0.5
                   }}
                 >
-                  {!open ?
-                    <ChevronRight sx={{ color: "#FFFFFF" }} /> :
-                    <ChevronLeft sx={{ color: "#FFFFFF" }} />
-                  }
-                </IconButton>
-                <Tooltip title="Notifications" placement="right">
-                  <IconButton
-                    size={"small"}
-                    aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
-                    onClick={() => hanldeNavigate("/notifications")}
-                    sx={{
-                      flexShrink: 0,
-                      color: "#fff",
-                      "&:hover": {
-                        bgcolor: "#ffffff2b"
-                      },
-                    }}
-                  >
-                    <Badge badgeContent={unreadCount} max={99} color="error" sx={{ "& .MuiBadge-badge": { fontSize: 9, minWidth: 16, height: 16, px: .4, border: "1px solid #024F6E" } }}>
-                      <NotificationsNoneRounded />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
+                  {!open ? (
+                    <IconButton
+                      size={"small"}
+                      onClick={handleTopMenuOpen}
+                      sx={{
+                        width: "36px",
+                        height: "36px",
+                        flexShrink: 0,
+                        background: "#D4D4D440",
+                        color: "#FFFFFF",
+                        "&:hover": {
+                          bgcolor: "#FFFFFF2B"
+                        },
+                      }}
+                    >
+                      <MoreHoriz sx={{ color: "#FFFFFF" }} />
+                    </IconButton>
+                  ) : (
+                    <Fragment>
+                      <IconButton
+                        size={"small"}
+                        onClick={handleDrawer}
+                        sx={{
+                          width: "36px",
+                          height: "36px",
+                          flexShrink: 0,
+                          background: "#D4D4D440",
+                          color: "#FFFFFF",
+                          "&:hover": {
+                            bgcolor: "#FFFFFF2B"
+                          },
+                        }}
+                      >
+                        <ChevronLeft sx={{ color: "#FFFFFF" }} />
+                      </IconButton>
+                      <Tooltip title="Notifications" placement="right">
+                        <IconButton
+                          aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
+                          onClick={() => handleNavigate("/notifications")}
+                          sx={{
+                            width: "36px",
+                            height: "36px",
+                            flexShrink: 0,
+                            color: "#FFFFFF",
+                            background: "#D4D4D440",
+                            "&:hover": {
+                              bgcolor: "#FFFFFF2B"
+                            },
+                          }}
+                        >
+                          <Badge badgeContent={unreadCount} max={99} color="error" sx={{ "& .MuiBadge-badge": { fontSize: 9, minWidth: 16, height: 16, px: .4, border: "1px solid #024F6E" } }}>
+                            <NotificationsNoneRounded sx={{ width: "20px", height: "20px" }} />
+                          </Badge>
+                        </IconButton>
+                      </Tooltip>
+                    </Fragment>
+                  )}
+                </Box>
               </Box>
-            </Box>
-            {workspaces.length > 0 && (
-              <Box sx={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "center"
-              }}
-              >
-                <Tooltip
-                  title={open ? "Switch workspace" : workspace?.name || "Switch workspace"}
-                  placement="right"
+              {workspaces.length > 0 && (
+                <Box sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center"
+                }}
                 >
-                  <FormControl
-                    sx={{
-                      flex: 1,
-                      minWidth: 0,
-                      width: open ? "100%" : 54,
-                      minHeight: 46,
-                      height: 46
-                    }}
+                  <Tooltip
+                    title={open ? "Switch workspace" : workspace?.name || "Switch workspace"}
+                    placement="right"
                   >
-                    <Select
-                      value={selectedWorkspaceId}
-                      onChange={handleWorkspaceChange}
-                      displayEmpty
-                      inputProps={{ "aria-label": "Switch workspace" }}
-                      renderValue={(id) => {
-                        const current = workspaces.find((item) => item._id === id);
-                        return open ? (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              minWidth: 0,
-                              gap: 1.2
-                            }}
-                          >
+                    <FormControl
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        width: open ? "100%" : 54,
+                        minHeight: 46,
+                        height: 46
+                      }}
+                    >
+                      <Select
+                        value={selectedWorkspaceId}
+                        onChange={handleWorkspaceChange}
+                        displayEmpty
+                        inputProps={{ "aria-label": "Switch workspace" }}
+                        renderValue={(id) => {
+                          const current = workspaces.find((item) => item._id === id);
+                          return open ? (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                minWidth: 0,
+                                gap: 1.2
+                              }}
+                            >
+                              <Avatar
+                                variant="rounded"
+                                sx={{
+                                  width: 30,
+                                  height: 30,
+                                  flexShrink: 0,
+                                  bgcolor: current?.background || "#ffffff33",
+                                  color: "#fff",
+                                  fontSize: 13,
+                                  fontWeight: 800,
+                                  borderRadius: 2.25
+                                }}
+                              >
+                                {current?.name?.slice(0, 1)?.toUpperCase() || "W"}
+                              </Avatar>
+                              <Box sx={{ minWidth: 0, textAlign: "left" }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    display: "block",
+                                    color: "#cdeaf1",
+                                    lineHeight: 1.1
+                                  }}
+                                >
+                                  WORKSPACE
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  noWrap sx={{
+                                    color: "#fff",
+                                    fontWeight: 700,
+                                    lineHeight: 1.3
+                                  }}
+                                >
+                                  {current?.name || "Select workspace"}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          ) : (
                             <Avatar
                               variant="rounded"
                               sx={{
                                 width: 30,
                                 height: 30,
-                                flexShrink: 0,
                                 bgcolor: current?.background || "#ffffff33",
                                 color: "#fff",
                                 fontSize: 13,
@@ -249,266 +422,296 @@ function Sidebar() {
                             >
                               {current?.name?.slice(0, 1)?.toUpperCase() || "W"}
                             </Avatar>
-                            <Box sx={{ minWidth: 0, textAlign: "left" }}>
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  display: "block",
-                                  color: "#cdeaf1",
-                                  lineHeight: 1.1
-                                }}
-                              >
-                                WORKSPACE
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                noWrap sx={{
-                                  color: "#fff",
-                                  fontWeight: 700,
-                                  lineHeight: 1.3
-                                }}
-                              >
-                                {current?.name || "Select workspace"}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        ) : (
-                          <Avatar
-                            variant="rounded"
-                            sx={{
-                              width: 30,
-                              height: 30,
-                              bgcolor: current?.background || "#ffffff33",
-                              color: "#fff",
-                              fontSize: 13,
-                              fontWeight: 800,
-                              borderRadius: 2.25
-                            }}
-                          >
-                            {current?.name?.slice(0, 1)?.toUpperCase() || "W"}
-                          </Avatar>
-                        );
-                      }}
-                      sx={{
-                        color: "#fff",
-                        borderRadius: 4,
-                        minHeight: 46,
-                        "& .MuiSelect-select": {
-                          display: "flex",
-                          alignItems: "center",
-                          p: open ? 1 : "7px"
-                        },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#ffffff55"
-                        },
-                        "&:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#ffffffaa"
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#fff"
-                        },
-                        "& .MuiSelect-icon": {
+                          );
+                        }}
+                        sx={{
                           color: "#fff",
-                          display: open ? "block" : "none"
-                        }
-                      }}
-                    >
-                      {workspaces.map((item) => (
-                        <MenuItem key={item._id} value={item._id}>
-                          <Avatar
-                            variant="rounded"
-                            sx={{
-                              width: 30,
-                              height: 30,
-                              mr: 1.2,
-                              bgcolor: item.background || "#e5f4f1",
-                              color: "#168d86",
-                              fontSize: 13,
-                              fontWeight: 800,
-                              borderRadius: 2.25
-                            }}
-                          >
-                            {item.name?.slice(0, 1)?.toUpperCase() || "W"}
-                          </Avatar>
-                          <ListItemText primary={item.name} secondary={item.role || "Workspace"} />
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Tooltip>
-              </Box>
-            )}
-          </DrawerHeader>
-          <Divider />
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: open ? "flex-start" : "center",
-              height: "calc(100vh - 184px)",
-              overflowY: "auto",
-              overflowX: "hidden"
-            }}
-          >
-            <List sx={{ width: "100%" }}>
-              {menu.slice(0, 3).map((item, index) => (
-                <ListItem
-                  key={index}
-                  disableGutters
-                  sx={{
-                    display: 'block',
-                    py: 0
-                  }}
-                >
-                  <ListItemButton
-                    sx={[
-                      { minHeight: 48, px: 2.5, },
-                      open ? { justifyContent: 'initial' } : { justifyContent: 'center' },
-                    ]}
-                    onClick={() => hanldeNavigate(item.path)}
-                  >
-                    <ListItemIcon
-                      sx={[
-                        { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
-                        open ? { mr: 1, } : { mr: 'auto', },
-                      ]}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.label}
-                      sx={[open ? { opacity: 1, } : { opacity: 0, },]}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-            <Divider sx={{ width: "100%" }} />
-            <List sx={{ width: "100%" }}>
-              {menu.slice(3, 5).map((item, index) => (
-                <ListItem
-                  key={index}
-                  disableGutters
-                  sx={{
-                    display: 'block',
-                    py: 0
-                  }}
-                >
-                  <ListItemButton
-                    sx={[
-                      { minHeight: 48, px: 2.5, },
-                      open ? { justifyContent: 'initial' } : { justifyContent: 'center' },
-                    ]}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      hanldeNavigate(item.path);
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={[
-                        { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
-                        open ? { mr: 1, } : { mr: 'auto', },
-                      ]}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.label}
-                      sx={[open ? { opacity: 1, } : { opacity: 0, },]}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-            <Divider sx={{ width: "100%" }} />
-            <List sx={{ width: "100%" }}>
-              {menu.slice(5).map((item, index) => (
-                <ListItem
-                  key={index}
-                  disableGutters
-                  sx={{
-                    display: 'block',
-                    py: 0
-                  }}
-                >
-                  <ListItemButton
-                    sx={[
-                      { minHeight: 48, px: 2.5, },
-                      open ? { justifyContent: 'initial' } : { justifyContent: 'center' },
-                    ]}
-                    onClick={() => hanldeNavigate(item.path)}
-                  >
-                    <ListItemIcon
-                      sx={[
-                        { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
-                        open ? { mr: 1, } : { mr: 'auto', },
-                      ]}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={item.label}
-                      sx={[open ? { opacity: 1, } : { opacity: 0, },]}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%"
-            }}
-          >
-            {open ? (
-              <Box
+                          borderRadius: 4,
+                          minHeight: 46,
+                          "& .MuiSelect-select": {
+                            display: "flex",
+                            alignItems: "center",
+                            p: 1
+                          },
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#ffffff55"
+                          },
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#ffffffaa"
+                          },
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "#fff"
+                          },
+                          "& .MuiSelect-icon": {
+                            color: "#fff",
+                            display: open ? "block" : "none"
+                          }
+                        }}
+                      >
+                        {workspaces.map((item) => (
+                          <MenuItem key={item._id} value={item._id}>
+                            <Avatar
+                              variant="rounded"
+                              sx={{
+                                width: 30,
+                                height: 30,
+                                mr: 1.2,
+                                bgcolor: item.background || "#e5f4f1",
+                                color: "#168d86",
+                                fontSize: 13,
+                                fontWeight: 800,
+                                borderRadius: 2.25
+                              }}
+                            >
+                              {item.name?.slice(0, 1)?.toUpperCase() || "W"}
+                            </Avatar>
+                            <ListItemText primary={item.name} secondary={item.role || "Workspace"} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Tooltip>
+                </Box>
+              )}
+            </DrawerHeader>
+            <Divider />
+            <Box
+              sx={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: open ? "flex-start" : "center",
+                height: "calc(100vh - 185px)",
+                overflowY: "auto",
+                overflowX: "hidden"
+              }}
+            >
+              <List
                 sx={{
+                  py: 2,
+                  width: "100%",
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%"
+                  flexDirection: "column",
+                  gap: 1
                 }}
               >
+                {menu.slice(0, 3).map((item, index) => (
+                  <ListItem
+                    key={index}
+                    disableGutters
+                    sx={{
+                      display: 'block',
+                      py: 0
+                    }}
+                  >
+                    <ListItemButton
+                      sx={[
+                        { minHeight: 46, height: 46, px: 2.5, },
+                        { border: item.path === pathname ? "1px solid #FFFFFF" : "1px solid transparent" },
+                        { borderRadius: "16px" },
+                        open ? { justifyContent: 'initial' } : { justifyContent: 'center' },
+                      ]}
+                      onClick={() => handleNavigate(item.path)}
+                    >
+                      <ListItemIcon
+                        sx={[
+                          { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
+                          open ? { mr: 1, } : { mr: 'auto', },
+                        ]}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.label}
+                        sx={[
+                          { "& .MuiTypography-root": { fontSize: "14px" } },
+                          open ? { opacity: 1, } : { opacity: 0, },
+                        ]}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+              <Divider sx={{ width: "100%" }} />
+              <List
+                sx={{
+                  py: 2,
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1
+                }}
+              >
+                {menu.slice(3, 5).map((item, index) => (
+                  <ListItem
+                    key={index}
+                    disableGutters
+                    sx={{
+                      display: 'block',
+                      py: 0
+                    }}
+                  >
+                    <ListItemButton
+                      sx={[
+                        { minHeight: 46, height: 46, px: 2.5, },
+                        { border: item.path === pathname ? "1px solid #FFFFFF" : "1px solid transparent" },
+                        { borderRadius: "16px" },
+                        open ? { justifyContent: 'initial' } : { justifyContent: 'center' },
+                      ]}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNavigate(item.path);
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={[
+                          { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
+                          open ? { mr: 1, } : { mr: 'auto', },
+                        ]}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.label}
+                        sx={[
+                          { "& .MuiTypography-root": { fontSize: "14px" } },
+                          open ? { opacity: 1, } : { opacity: 0, },
+                        ]}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+              <Divider sx={{ width: "100%" }} />
+              <List
+                sx={{
+                  py: 2,
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1
+                }}
+              >
+                {menu.slice(5).map((item, index) => (
+                  <ListItem
+                    key={index}
+                    disableGutters
+                    sx={{
+                      display: 'block',
+                      py: 0
+                    }}
+                  >
+                    <ListItemButton
+                      sx={[
+                        { minHeight: 46, height: 46, px: 2.5, },
+                        { border: item.path === pathname ? "1px solid #FFFFFF" : "1px solid transparent" },
+                        { borderRadius: "16px" },
+                        open ? { justifyContent: 'initial' } : { justifyContent: 'center' },
+                      ]}
+                      onClick={() => handleNavigate(item.path)}
+                    >
+                      <ListItemIcon
+                        sx={[
+                          { minWidth: 0, justifyContent: 'center', color: "#FFFFFF" },
+                          open ? { mr: 1, } : { mr: 'auto', },
+                        ]}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.label}
+                        sx={[
+                          { "& .MuiTypography-root": { fontSize: "14px" } },
+                          open ? { opacity: 1, } : { opacity: 0, }
+                        ]}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%"
+              }}
+            >
+              {open ? (
                 <Box
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    gap: 1
+                    justifyContent: "space-between",
+                    width: "100%"
                   }}
                 >
-                  <Avatar
-                    src={profile_picture}
-                    sx={{ width: "38px", height: "38px" }}
-                  />
                   <Box
                     sx={{
                       display: "flex",
-                      flexDirection: "column",
-                      gap: "4px"
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1
                     }}
                   >
-                    <Typography variant={"body2"} sx={{ lineHeight: 1 }}>{name}</Typography>
-                    <Typography variant={"caption"} sx={{ lineHeight: 1 }}>{email}</Typography>
+                    <Button
+                      sx={{
+                        gap: 0.5,
+                        color: "#FFFFFF",
+                        justifyContent: "flex-start",
+                      }}
+                      onClick={() => handleNavigate("/settings", "profile")}
+                    >
+                      <Avatar
+                        src={profile_picture}
+                        sx={{ width: "38px", height: "38px" }}
+                      />
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-start",
+                          gap: "4px"
+                        }}
+                      >
+                        <Typography
+                          variant={"body2"}
+                          sx={{ lineHeight: 1 }}
+                        >
+                          {name}
+                        </Typography>
+                        <Typography
+                          variant={"caption"}
+                          sx={{
+                            fontSize: "11px",
+                            lineHeight: 1,
+                            textTransform: "lowercase"
+                          }}
+                        >
+                          {email}
+                        </Typography>
+                      </Box>
+                    </Button>
                   </Box>
+                  <IconButton
+                    onClick={handleLogout}
+                  >
+                    <LogoutOutlined sx={{ color: "#FFFFFF" }} />
+                  </IconButton>
                 </Box>
+              ) : (
                 <IconButton
-                  onClick={handleLogout}
+                  onClick={handleBottomMenuOpen}
                 >
-                  <LogoutOutlined sx={{ color: "#FFFFFF" }} />
+                  <Avatar src={profile_picture} sx={{ width: "38px", height: "38px" }} />
                 </IconButton>
-              </Box>
-            ) : (
-              <Avatar src={profile_picture} sx={{ width: "38px", height: "38px" }} />
-            )}
+              )}
+            </Box>
           </Box>
-        </Box>
-      </Drawer>
-    </Box>
+        </Drawer>
+      </Box>
+    </Fragment>
   );
 };
 
