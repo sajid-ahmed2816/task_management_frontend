@@ -613,7 +613,13 @@ export default function Home() {
                           );
                         })}
                         <Divider />
-                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Stack
+                          direction="row"
+                          sx={{
+                            alignItems: "center",
+                            justifyContent: "space-between"
+                          }}
+                        >
                           <Typography variant="body2" color="text.secondary">Due in the next 7 days</Typography>
                           <Chip size="small" icon={<CalendarMonthRounded />} label={numberFormat.format(tasks.upcoming || 0)} variant="outlined" />
                         </Stack>
