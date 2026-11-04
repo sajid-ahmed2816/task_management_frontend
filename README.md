@@ -14,10 +14,14 @@ npm ci
 npm run dev
 ```
 
-Vite prints the local URL (normally `http://localhost:5173`). The frontend defaults to the deployed API at `https://task-management-backend-live.vercel.app/api`. To use the local backend or another environment, create `.env.local`:
+Vite prints the local URL (normally `http://localhost:5173`). The checked-in `.env.local` contains one active `VITE_API_URL` and a commented alternative. Keep the local URL active while developing; before pushing a production build, comment the local line and uncomment the live URL. This variable contains public endpoint URLs only, not credentials.
 
 ```dotenv
+# Development
 VITE_API_URL=http://localhost:5174/api
+
+# Live (switch these comments before a production push)
+# VITE_API_URL=https://task-management-backend-live.vercel.app/api
 ```
 
 `VITE_API_URL` is the complete API base URL, including `/api`. Vite embeds `VITE_` variables in the browser bundle, so put only public configuration here; never put credentials, signing keys, database URLs, or other secrets in frontend env files.
@@ -39,6 +43,7 @@ VITE_API_URL=http://localhost:5174/api
 - `src/api/` contains the Axios service modules and route builders for auth, workspaces, members/invitations, projects, tasks, chat, and notifications.
 - `src/config/zustand/` holds shared client state, including the selected workspace and project data. `src/context/` contains authentication and notification contexts.
 - `src/components/layout/` provides the authenticated application shell and workspace navigation.
+- `public/flow.svg` is used for the browser favicon and app manifest icon; `public/manifest.webmanifest` provides Flow's saved-app name and display colors.
 
 Requests use the Axios instance in `src/config/axios/axios.js`. It sets the `Authorization: Bearer ...` header from the signed-in user's browser storage. API paths are relative to `VITE_API_URL`; see the route builders under `src/api/*/routes.js` for the frontend's expected endpoints.
 
@@ -56,7 +61,7 @@ Use these project settings:
 - Output directory: `dist`
 - Environment variable: `VITE_API_URL=https://<your-backend-domain>/api`
 
-Set `VITE_API_URL` for each Vercel environment that should build (Production, Preview, and Development as needed), then redeploy so the value is included in the client bundle. The checked-in [`vercel.json`](./vercel.json) rewrites SPA paths to `index.html`, allowing direct navigation and refresh on routes such as `/tasks` and `/accept-invitation`.
+Set `VITE_API_URL` in Vercel to `https://task-management-backend-live.vercel.app/api` for Production builds, then redeploy so the value is included in the client bundle. The checked-in [`vercel.json`](./vercel.json) rewrites SPA paths to `index.html`, allowing direct navigation and refresh on routes such as `/tasks` and `/accept-invitation`.
 
 Before launch, configure the backend's allowed origins to include the deployed frontend domains (including Preview domains if previews should connect). Verify signup/login and OTP, invitation acceptance, workspace switching, API requests, chat, and notifications against the deployed backend. Socket.IO is used by chat and notifications, so confirm the backend's Vercel runtime and connection behavior with real clients; for sustained realtime workloads or multi-instance room fanout, plan for reconnect handling and a shared Socket.IO adapter/store.
 

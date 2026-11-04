@@ -14,6 +14,7 @@ import WorkspaceServices from './api/workspaces';
 import toastify from './components/toast';
 import WorkspaceDialog from './components/workspace_dialog';
 import InvitationLanding from './views/invitation';
+import PageMetadata from './components/page_metadata';
 
 const pendingInviteKey = "pendingWorkspaceInvitationToken";
 
@@ -22,6 +23,15 @@ function ProtectedLayout({ token }) {
   if (token) return <Layout />;
   const returnTo = `${location.pathname}${location.search}`;
   return <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
+}
+
+function MetadataRoute({ title, description, children }) {
+  return (
+    <>
+      <PageMetadata title={title} description={description} />
+      {children}
+    </>
+  );
 }
 
 function App() {
@@ -159,15 +169,41 @@ function App() {
       <Toaster />
       <BrowserRouter>
         <Routes>
-          <Route path="/accept-invitation" element={<InvitationLanding />} />
+          <Route
+            path="/accept-invitation"
+            element={(
+              <MetadataRoute
+                title="Accept invitation"
+                description="Review and accept your invitation to join a Todo Workspace team."
+              >
+                <InvitationLanding />
+              </MetadataRoute>
+            )}
+          />
           <Route path={"/"} element={<ProtectedLayout token={token} />}>
             {adminRoutes.map((r, i) => (
-              <Route key={i} path={r.path} element={r.component} />
+              <Route
+                key={i}
+                path={r.path}
+                element={(
+                  <MetadataRoute title={r.title} description={r.description}>
+                    {r.component}
+                  </MetadataRoute>
+                )}
+              />
             ))}
           </Route>
           <Route path={"/"} element={token ? <Navigate to={"/dashboard"} /> : <Outlet />}>
             {publicRoutes.map((r, i) => (
-              <Route key={i} path={r.path} element={r.component} />
+              <Route
+                key={i}
+                path={r.path}
+                element={(
+                  <MetadataRoute title={r.title} description={r.description}>
+                    {r.component}
+                  </MetadataRoute>
+                )}
+              />
             ))}
           </Route>
         </Routes>
