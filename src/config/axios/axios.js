@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const apiBaseUrl =
-  import.meta.env.VITE_API_URL || "https://task-management-backend-live.vercel.app/api";
+  import.meta.env.VITE_API_URL || "http://localhost:5174/api";
 
 const instance = axios.create({
   baseURL: apiBaseUrl,

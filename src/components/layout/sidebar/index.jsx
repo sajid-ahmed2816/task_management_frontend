@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemText, ListItemIcon, Avatar, Badge, FormControl, MenuItem, Select, Tooltip, Popover, Button } from '@mui/material'
-import { ChevronLeft, ChevronRight, LogoutOutlined, MoreHoriz, NotificationsNoneRounded, SchemaOutlined, SettingsOutlined } from '@mui/icons-material';
+import { ChevronLeft, ChevronRight, LogoutOutlined, MoreHoriz, NotificationsNoneRounded, SchemaRounded, SettingsOutlined } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import toast from 'react-hot-toast';
 import { useNotifications } from '../../../context/NotificationContext';
@@ -262,7 +262,7 @@ function Sidebar() {
                       gap: 1,
                     }}
                   >
-                    <SchemaOutlined />
+                    <SchemaRounded />
                     <Box component={"span"} sx={{ fontWeight: 700 }}>
                       Flow
                     </Box>

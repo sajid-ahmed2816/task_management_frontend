@@ -1,0 +1,19 @@
+{
+  "name": "Flow",
+  "short_name": "Flow",
+  "id": "/",
+  "description": "Plan projects, organize tasks, and collaborate with your workspace team.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#176B65",
+  "icons": [
+    {
+      "src": "/flow.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -4,7 +4,9 @@ import Login from "../../views/auth";
 const publicRoutes = [
 	{
 		path: "/login",
-		component: createElement(Login)
+		component: createElement(Login),
+		title: "Sign in",
+		description: "Sign in to manage your workspaces, projects, tasks, and team conversations.",
 	}
 ];
 
