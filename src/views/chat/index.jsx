@@ -314,7 +314,10 @@ function Chat() {
       setConnection("disconnected");
       return undefined;
     }
-    const socket = io(socketUrl, { auth: { token } });
+    const socket = io(socketUrl, {
+      auth: { token },
+      transports: ["websocket"],
+    });
     socketRef.current = socket;
     joinedRoomsRef.current = new Set();
     const joinAvailableConversations = () => {

@@ -14,7 +14,7 @@ npm ci
 npm run dev
 ```
 
-Vite prints the local URL (normally `http://localhost:5173`). The frontend expects the local API at `http://localhost:5174/api` by default. To point it elsewhere, create `.env.local`:
+Vite prints the local URL (normally `http://localhost:5173`). The frontend defaults to the deployed API at `https://task-management-backend-live.vercel.app/api`. To use the local backend or another environment, create `.env.local`:
 
 ```dotenv
 VITE_API_URL=http://localhost:5174/api
@@ -42,7 +42,7 @@ VITE_API_URL=http://localhost:5174/api
 
 Requests use the Axios instance in `src/config/axios/axios.js`. It sets the `Authorization: Bearer ...` header from the signed-in user's browser storage. API paths are relative to `VITE_API_URL`; see the route builders under `src/api/*/routes.js` for the frontend's expected endpoints.
 
-Chat and notification updates use Socket.IO. The client derives the socket origin by removing the trailing `/api` from `VITE_API_URL`, then authenticates the socket with the user's token. For example, `https://api.example.com/api` uses `https://api.example.com` for Socket.IO. The backend must allow the frontend origin for both HTTP/CORS and Socket.IO connections.
+Chat and notification updates use Socket.IO over WebSocket. The client derives the socket origin by removing the trailing `/api` from `VITE_API_URL`, then authenticates the socket with the user's token. For example, `https://api.example.com/api` uses `https://api.example.com` for Socket.IO. The backend must allow the frontend origin for both HTTP/CORS and Socket.IO connections.
 
 ## Deploy frontend to Vercel
 
