@@ -40,7 +40,10 @@ export function NotificationProvider({ children }) {
       };
     }).catch(() => { });
 
-    const socket = io(socketUrl, { auth: { token } });
+    const socket = io(socketUrl, {
+      auth: { token },
+      transports: ["websocket"],
+    });
     socket.on("notification:new", () => {
       if (active) setUnreadCount((count) => count + 1);
     });
