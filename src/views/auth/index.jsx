@@ -176,12 +176,16 @@ function Login() {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
 	const requestedReturnTo = searchParams.get("returnTo");
+	const safeReturnTo = requestedReturnTo?.startsWith("/")
+		&& !requestedReturnTo.startsWith("//")
+		&& requestedReturnTo !== "/"
+		&& requestedReturnTo !== "/login"
+		? requestedReturnTo
+		: "/dashboard";
 	const hasPendingWorkspaceInvite = Boolean(sessionStorage.getItem("pendingWorkspaceInvitationToken"));
 	const redirectTo = hasPendingWorkspaceInvite
 		? "/settings?tab=invitations"
-		: requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
-			? requestedReturnTo
-			: "/dashboard";
+		: safeReturnTo;
 	const invitedEmail = searchParams.get("inviteEmail") || "";
 
 	const { userLogin } = useAuth();
