@@ -194,6 +194,7 @@ function App() {
             ))}
           </Route>
           <Route path={"/"} element={token ? <Navigate to={"/dashboard"} /> : <Outlet />}>
+            <Route index element={<Navigate to="/login" replace />} />
             {publicRoutes.map((r, i) => (
               <Route
                 key={i}
